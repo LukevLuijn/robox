@@ -5,8 +5,8 @@
 // Data:        16-05-2022
 // ======================================
 
-#ifndef ROBOX_USER_INTERFACE_LOGMESSAGEPANEL_H
-#define ROBOX_USER_INTERFACE_LOGMESSAGEPANEL_H
+#ifndef ROBOX_CONTROL_UI_LOG_MESSAGE_PANEL_H
+#define ROBOX_CONTROL_UI_LOG_MESSAGE_PANEL_H
 
 #include <wx/wx.h>
 #include "msg_protocol.h"
@@ -33,4 +33,4 @@ namespace Widgets
     };
 }// namespace Base
 
-#endif//ROBOX_USER_INTERFACE_LOGMESSAGEPANEL_H
+#endif//ROBOX_CONTROL_UI_LOG_MESSAGE_PANEL_H

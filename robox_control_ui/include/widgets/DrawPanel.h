@@ -5,8 +5,8 @@
 // Data:        20-05-2022
 // ======================================
 
-#ifndef ROBOT_VISUAL_DRAWPANEL_H
-#define ROBOT_VISUAL_DRAWPANEL_H
+#ifndef ROBOX_CONTROL_UI_DRAW_PANEL_H
+#define ROBOX_CONTROL_UI_DRAW_PANEL_H
 
 #include "wx/panel.h"
 
@@ -58,4 +58,4 @@ namespace Widgets
 
 
 
-#endif//ROBOT_VISUAL_DRAWPANEL_H
+#endif//ROBOX_CONTROL_UI_DRAW_PANEL_H

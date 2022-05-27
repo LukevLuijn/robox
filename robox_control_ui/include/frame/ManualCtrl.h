@@ -5,8 +5,8 @@
 // Data:        21-05-2022
 // ======================================
 
-#ifndef ROBOT_VISUAL_MANUALCTRL_H
-#define ROBOT_VISUAL_MANUALCTRL_H
+#ifndef ROBOX_CONTROL_UI_MANUAL_CTRL_H
+#define ROBOX_CONTROL_UI_MANUAL_CTRL_H
 
 #include "wx/wx.h"
 #include "wx/tglbtn.h"
@@ -153,4 +153,4 @@ namespace Frame
     };
 }// namespace Frame
 
-#endif//ROBOT_VISUAL_MANUALCTRL_H
+#endif//ROBOX_CONTROL_UI_MANUAL_CTRL_H

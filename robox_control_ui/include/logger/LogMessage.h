@@ -4,8 +4,9 @@
 // Author:      Luke van Luijn
 // Data:        17-05-2022
 // ======================================
-#ifndef ROBOX_USER_INTERFACE_LOGMESSAGE_H
-#define ROBOX_USER_INTERFACE_LOGMESSAGE_H
+
+#ifndef ROBOX_CONTROL_UI_LOG_MESSAGE_H
+#define ROBOX_CONTROL_UI_LOG_MESSAGE_H
 
 namespace Logger
 {
@@ -44,4 +45,4 @@ namespace Logger
 }// namespace Utils
 
 
-#endif//ROBOX_USER_INTERFACE_LOGMESSAGE_H
+#endif//ROBOX_CONTROL_UI_LOGMESSAGE_H

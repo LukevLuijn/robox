@@ -5,8 +5,8 @@
 // Data:        16-05-2022
 // ======================================
 
-#ifndef ROBOX_USER_INTERFACE_LOGPANEL_H
-#define ROBOX_USER_INTERFACE_LOGPANEL_H
+#ifndef ROBOX_CONTROL_UI_LOG_PANEL_H
+#define ROBOX_CONTROL_UI_LOG_PANEL_H
 
 #include "ScrolledLogWindow.h"
 
@@ -70,4 +70,4 @@ namespace Widgets
     };
 }// namespace Widgets
 
-#endif//ROBOX_USER_INTERFACE_LOGPANEL_H
+#endif//ROBOX_CONTROL_UI_LOG_PANEL_H

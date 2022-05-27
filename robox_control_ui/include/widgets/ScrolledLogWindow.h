@@ -5,8 +5,8 @@
 // Data:        16-05-2022
 // ======================================
 
-#ifndef ROBOX_USER_INTERFACE_SCROLLEDLOGWINDOW_H
-#define ROBOX_USER_INTERFACE_SCROLLEDLOGWINDOW_H
+#ifndef ROBOX_CONTROL_UI_SCROLLED_LOG_WINDOW_H
+#define ROBOX_CONTROL_UI_SCROLLED_LOG_WINDOW_H
 
 #include <vector>
 
@@ -81,4 +81,4 @@ namespace Widgets
 }// namespace Base
 
 
-#endif//ROBOX_USER_INTERFACE_SCROLLEDLOGWINDOW_H
+#endif//ROBOX_CONTROL_UI_SCROLLED_LOG_WINDOW_H

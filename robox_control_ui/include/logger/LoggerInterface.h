@@ -5,8 +5,8 @@
 // Data:        15-05-2022
 // ======================================
 
-#ifndef ROBOX_USER_INTERFACE_LOGGERINTERFACE_H
-#define ROBOX_USER_INTERFACE_LOGGERINTERFACE_H
+#ifndef ROBOX_CONTROL_UI_LOGGER_INTERFACE_H
+#define ROBOX_CONTROL_UI_LOGGER_INTERFACE_H
 
 #define USING_WIDGETS true
 
@@ -32,4 +32,4 @@ namespace Logger
     };
 }// namespace Interfaces
 
-#endif//ROBOX_USER_INTERFACE_LOGGERINTERFACE_H
+#endif//ROBOX_USER_INTERFACE_LOGGER_INTERFACE_H

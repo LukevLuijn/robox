@@ -4,8 +4,9 @@
 // Author:      Luke van Luijn
 // Data:        15-05-2022
 // ======================================
-#ifndef ROBOX_USER_INTERFACE_LOGGER_H
-#define ROBOX_USER_INTERFACE_LOGGER_H
+
+#ifndef ROBOX_CONTROL_UI_LOGGER_H
+#define ROBOX_CONTROL_UI_LOGGER_H
 
 #include <filesystem>
 #include <memory>
@@ -391,7 +392,7 @@ namespace Logger
     };
 }// namespace Logger
 
-#endif//ROBOX_USER_INTERFACE_LOGGER_H
+#endif//ROBOX_CONTROL_UI_LOGGER_H
 
 // https://cppcodetips.wordpress.com/2020/10/25/different-ways-to-get-the-name-of-the-calling-function-in-c/
 // https://stackoverflow.com/questions/353180/how-do-i-find-the-name-of-the-calling-function

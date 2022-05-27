@@ -5,8 +5,8 @@
 // Data:        15-05-2022
 // ======================================
 
-#ifndef ROBOX_USER_INTERFACE_SERIALDRIVER_H
-#define ROBOX_USER_INTERFACE_SERIALDRIVER_H
+#ifndef ROBOX_CONTROL_UI_SERIAL_DRIVER_H
+#define ROBOX_CONTROL_UI_SERIAL_DRIVER_H
 
 #include <queue>
 
@@ -73,4 +73,4 @@ namespace Driver
     };
 }// namespace Driver
 
-#endif//ROBOX_USER_INTERFACE_SERIALDRIVER_H
+#endif//ROBOX_CONTROL_UI_SERIAL_DRIVER_H

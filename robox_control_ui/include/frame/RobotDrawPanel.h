@@ -5,8 +5,8 @@
 // Data:        20-05-2022
 // ======================================
 
-#ifndef ROBOT_VISUAL_ROBOTDRAWPANEL_H
-#define ROBOT_VISUAL_ROBOTDRAWPANEL_H
+#ifndef ROBOX_CONTROL_UI_ROBOT_DRAW_PANEL_H
+#define ROBOX_CONTROL_UI_ROBOT_DRAW_PANEL_H
 
 #include "DrawPanel.h"
 #include "Kinematics.h"
@@ -132,4 +132,4 @@ namespace Frame
 
 }// namespace Frame
 
-#endif//ROBOT_VISUAL_ROBOTDRAWPANEL_H
+#endif//ROBOX_CONTROL_UI_ROBOT_DRAW_PANEL_H

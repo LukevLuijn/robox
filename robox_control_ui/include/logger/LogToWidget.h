@@ -6,8 +6,8 @@
 // ======================================
 
 
-#ifndef ROBOX_USER_INTERFACE_LOGTOWIDGET_H
-#define ROBOX_USER_INTERFACE_LOGTOWIDGET_H
+#ifndef ROBOX_CONTROL_UI_LOG_TO_WIDGET_H
+#define ROBOX_CONTROL_UI_LOG_TO_WIDGET_H
 
 #include "LoggerInterface.h"
 
@@ -28,4 +28,4 @@ namespace Logger
     };
 }// namespace Utils
 
-#endif//ROBOX_USER_INTERFACE_LOGTOWIDGET_H
+#endif//ROBOX_CONTROL_UI_LOG_TO_WIDGET_H

@@ -5,8 +5,8 @@
 // Data:        17-05-2022
 // ======================================
 
-#ifndef ROBOX_UI_TESTS_CONTROLLER_H
-#define ROBOX_UI_TESTS_CONTROLLER_H
+#ifndef ROBOX_CONTROL_UI_CONTROLLER_H
+#define ROBOX_CONTROL_UI_CONTROLLER_H
 
 #include "FrameBuilder.h"
 #include "MainFrame.h"
@@ -60,4 +60,4 @@ namespace Base
     };
 }// namespace Base
 
-#endif//ROBOX_UI_TESTS_CONTROLLER_H
+#endif//ROBOX_CONTROL_UI_CONTROLLER_H

@@ -4,8 +4,9 @@
 // Author:      Luke van Luijn
 // Data:        18-05-2022
 // ======================================
-#ifndef ROBOX_UI_TESTS_ROBOTINTERFACE_H
-#define ROBOX_UI_TESTS_ROBOTINTERFACE_H
+
+#ifndef ROBOX_CONTROL_UI_ROBOT_CONTROLLER_H
+#define ROBOX_CONTROL_UI_ROBOT_CONTROLLER_H
 
 #include "RobotDriver.h"
 #include <array>
@@ -211,4 +212,4 @@ namespace Driver
     };
 }// namespace Driver
 
-#endif//ROBOX_UI_TESTS_ROBOTINTERFACE_H
+#endif//ROBOX_CONTROL_UI_ROBOT_CONTROLLER_H

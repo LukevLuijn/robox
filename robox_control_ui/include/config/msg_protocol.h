@@ -5,8 +5,8 @@
 // Data:        15-05-2022
 // ======================================
 
-#ifndef ROBOX_USER_INTERFACE_MSG_PROTOCOL_H
-#define ROBOX_USER_INTERFACE_MSG_PROTOCOL_H
+#ifndef ROBOX_CONTROL_UI_MSG_PROTOCOL_H
+#define ROBOX_CONTROL_UI_MSG_PROTOCOL_H
 
 #include <cstdint>
 

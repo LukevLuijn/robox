@@ -5,9 +5,8 @@
 // Data:        15-05-2022
 // ======================================
 
-#ifndef ROBOX_USER_INTERFACE_GLOBAL_CONFIG_H
-#define ROBOX_USER_INTERFACE_GLOBAL_CONFIG_H
-
+#ifndef ROBOX_CONTROL_UI_GLOBAL_CONFIG_H
+#define ROBOX_CONTROL_UI_GLOBAL_CONFIG_H
 
 #define WINDOW_WIDTH 920
 #define WINDOW_HEIGHT 700
@@ -29,4 +28,4 @@
 
 #define ASSETS_PATH "../assets/png/"
 
-#endif//ROBOX_USER_INTERFACE_GLOBAL_CONFIG_H
+#endif//ROBOX_CONTROL_UI_GLOBAL_CONFIG_H

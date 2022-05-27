@@ -5,8 +5,8 @@
 // Data:        20-05-2022
 // ======================================
 
-#ifndef ROBOT_VISUAL_KINEMATICS_H
-#define ROBOT_VISUAL_KINEMATICS_H
+#ifndef ROBOX_CONTROL_UI_KINEMATICS_H
+#define ROBOX_CONTROL_UI_KINEMATICS_H
 
 namespace Utils
 {
@@ -83,6 +83,4 @@ namespace Utils
     };
 }// namespace Utils
 
-#endif//ROBOT_VISUAL_KINEMATICS_H
-
-// https://github.com/henriksod/Fabrik2DArduino
+#endif//ROBOX_CONTROL_UI_KINEMATICS_H

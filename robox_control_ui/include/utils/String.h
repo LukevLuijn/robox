@@ -5,8 +5,8 @@
 // Data:        15-05-2022
 // ======================================
 
-#ifndef TEMPLATE_STRING_H
-#define TEMPLATE_STRING_H
+#ifndef ROBOX_CONTROL_UI_STRING_H
+#define ROBOX_CONTROL_UI_STRING_H
 
 #include <algorithm>
 #include <iomanip>

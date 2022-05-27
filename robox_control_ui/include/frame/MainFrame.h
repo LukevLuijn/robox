@@ -4,8 +4,9 @@
 // Author:      Luke van Luijn
 // Data:        17-05-2022
 // ======================================
-#ifndef ROBOX_UI_TESTS_MAINFRAME_H
-#define ROBOX_UI_TESTS_MAINFRAME_H
+
+#ifndef ROBOX_CONTROL_UI_MAIN_FRAME_H
+#define ROBOX_CONTROL_UI_MAIN_FRAME_H
 
 #include "wx/wx.h"
 #include "wx/statline.h"
@@ -64,4 +65,4 @@ namespace Frame
     };
 }// namespace Frame
 
-#endif//ROBOX_UI_TESTS_MAINFRAME_H
+#endif//ROBOX_CONTROL_UI_MAIN_FRAME_H

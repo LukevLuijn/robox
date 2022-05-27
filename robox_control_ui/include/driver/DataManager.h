@@ -5,8 +5,8 @@
 // Data:        14-05-2022
 // ======================================
 
-#ifndef ROBOC_UI_DATA_MANAGER_H
-#define ROBOC_UI_DATA_MANAGER_H
+#ifndef ROBOX_CONTROL_UI_DATA_MANAGER_H
+#define ROBOX_CONTROL_UI_DATA_MANAGER_H
 
 #include <cstdint>
 #include <vector>

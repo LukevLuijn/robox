@@ -5,8 +5,8 @@
 // Data:        14-05-2022
 // ======================================
 
-#ifndef TEMPLATE_POINT_H
-#define TEMPLATE_POINT_H
+#ifndef ROBOX_CONTROL_UI_POINT_H
+#define ROBOX_CONTROL_UI_POINT_H
 
 #include <array>
 

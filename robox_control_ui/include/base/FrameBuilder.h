@@ -5,8 +5,8 @@
 // Data:        17-05-2022
 // ======================================
 
-#ifndef ROBOX_UI_TESTS_FRAMEBUILDER_H
-#define ROBOX_UI_TESTS_FRAMEBUILDER_H
+#ifndef ROBOX_CONTROL_UI_FRAME_BUILDER_H
+#define ROBOX_CONTROL_UI_FRAME_BUILDER_H
 
 #include "FrameInterface.h"
 #include <memory>
@@ -46,6 +46,6 @@ namespace Base
     private:
         Frame::IFrame* m_currentFrame{};
     };
-}
+}// namespace Base
 
-#endif//ROBOX_UI_TESTS_FRAMEBUILDER_H
+#endif//ROBOX_CONTROL_UI_FRAME_BUILDER_H

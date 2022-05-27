@@ -5,8 +5,8 @@
 // Data:        17-05-2022
 // ======================================
 
-#ifndef ROBOX_USER_INTERFACE_BITMAP_H
-#define ROBOX_USER_INTERFACE_BITMAP_H
+#ifndef ROBOX_CONTROL_UI_BITMAP_H
+#define ROBOX_CONTROL_UI_BITMAP_H
 
 #include "wx/bitmap.h"
 #include "global_config.h"
@@ -48,4 +48,4 @@ namespace Utils
     };
 }
 
-#endif//ROBOX_USER_INTERFACE_BITMAP_H
+#endif//ROBOX_CONTROL_UI_BITMAP_H

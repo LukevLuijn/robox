@@ -4,8 +4,9 @@
 // Author:      Luke van Luijn
 // Data:        23-05-2022
 // ======================================
-#ifndef ROBOX_UI_TESTS_MAIN_APPLICATION_H
-#define ROBOX_UI_TESTS_MAIN_APPLICATION_H
+
+#ifndef ROBOX_CONTROL_UI_MAIN_APPLICATION_H
+#define ROBOX_CONTROL_UI_MAIN_APPLICATION_H
 
 #include "wx/wx.h"
 
@@ -33,4 +34,4 @@ namespace Base
 
 
 
-#endif//ROBOX_UI_TESTS_MAINAPPLICATION_H
+#endif//ROBOX_CONTROL_UI_MAINAPPLICATION_H
