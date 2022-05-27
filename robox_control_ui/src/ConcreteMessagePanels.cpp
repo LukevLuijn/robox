@@ -1,6 +1,9 @@
-//
-// Created by luke on 16-05-22.
-//
+// ======================================
+// Filename:    ConcreteMessagePanels.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        16-05-2022
+// ======================================
 
 #include "ConcreteMessagePanels.h"
 #include "Bitmap.h"

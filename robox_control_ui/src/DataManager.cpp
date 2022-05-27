@@ -1,6 +1,9 @@
-//
-// Created by luke on 15-05-22.
-//
+// ======================================
+// Filename:    DataManager.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        15-05-2022
+// ======================================
 
 #include "DataManager.h"
 #include "../include/logger/Logger.h"

@@ -1,9 +1,12 @@
-//
-// Created by luke on 15-05-22.
-//
+// ======================================
+// Filename:    LogToConsole.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        15-05-2022
+// ======================================
 
-#include "../include/logger/LogToConsole.h"
-#include "../include/logger/Logger.h"
+#include "LogToConsole.h"
+#include "Logger.h"
 #include "String.h"
 
 namespace Logger

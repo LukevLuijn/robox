@@ -1,12 +1,15 @@
-//
-// Created by luke on 21-05-22.
-//
+// ======================================
+// Filename:    ManualCtrl.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        21-05-2022
+// ======================================
 
 #include "ManualCtrl.h"
 
 #include <limits>
 
-#include "../include/logger/Logger.h"
+#include "Logger.h"
 #include "RobotController.h"
 #include "String.h"
 

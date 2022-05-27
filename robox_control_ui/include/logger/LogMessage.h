@@ -1,7 +1,9 @@
-//
-// Created by luke on 17-05-22.
-//
-
+// ======================================
+// Filename:    LogMessage.h
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        17-05-2022
+// ======================================
 #ifndef ROBOX_USER_INTERFACE_LOGMESSAGE_H
 #define ROBOX_USER_INTERFACE_LOGMESSAGE_H
 

@@ -1,13 +1,17 @@
-//
-// Created by luke on 20-05-22.
+// ======================================
+// Filename:    Kinematics.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        20-05-2022
+// ======================================
+
 // https://github.com/henriksod/Fabrik2DArduino
-//
 
 #include "Kinematics.h"
+
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
-#include <iostream>
 
 namespace Utils
 {

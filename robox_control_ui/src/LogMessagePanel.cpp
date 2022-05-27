@@ -1,8 +1,11 @@
-//
-// Created by luke on 16-05-22.
-//
+// ======================================
+// Filename:    LogMessagePanel.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        16-05-2022
+// ======================================
 
-#include "../include/widgets/LogMessagePanel.h"
+#include "LogMessagePanel.h"
 
 namespace Widgets
 {

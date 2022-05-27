@@ -1,6 +1,9 @@
-//
-// Created by luke on 17-05-22.
-//
+// ======================================
+// Filename:    Bitmap.h
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        17-05-2022
+// ======================================
 
 #ifndef ROBOX_USER_INTERFACE_BITMAP_H
 #define ROBOX_USER_INTERFACE_BITMAP_H

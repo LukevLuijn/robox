@@ -1,12 +1,13 @@
-//
-// Created by luke on 15-05-22.
-//
+// ======================================
+// Filename:    SerialDriver.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        15-05-2022
+// ======================================
 
 #include "SerialDriver.h"
 
-#include <utility>
-
-#include "../include/logger/Logger.h"
+#include "Logger.h"
 #include "global_config.h"
 
 namespace Driver

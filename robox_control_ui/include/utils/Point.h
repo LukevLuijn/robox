@@ -1,6 +1,9 @@
-//
-// Created by luke on 14-05-22.
-//
+// ======================================
+// Filename:    Point.h
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        14-05-2022
+// ======================================
 
 #ifndef TEMPLATE_POINT_H
 #define TEMPLATE_POINT_H

@@ -1,6 +1,9 @@
-//
-// Created by luke on 21-05-22.
-//
+// ======================================
+// Filename:    ManualCtrl.h
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        21-05-2022
+// ======================================
 
 #ifndef ROBOT_VISUAL_MANUALCTRL_H
 #define ROBOT_VISUAL_MANUALCTRL_H

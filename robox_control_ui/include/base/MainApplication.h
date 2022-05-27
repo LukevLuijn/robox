@@ -1,7 +1,9 @@
-//
-// Created by luke on 23-05-22.
-//
-
+// ======================================
+// Filename:    MainApplication.h
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        23-05-2022
+// ======================================
 #ifndef ROBOX_UI_TESTS_MAIN_APPLICATION_H
 #define ROBOX_UI_TESTS_MAIN_APPLICATION_H
 

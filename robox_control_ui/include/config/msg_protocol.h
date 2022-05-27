@@ -1,8 +1,8 @@
 // ======================================
 // Filename:    msg_protocol.h
-// Project:     ROBOX User interface
+// Project:     ROBOX Control UI
 // Author:      Luke van Luijn
-// Data:        14-05-2022
+// Data:        15-05-2022
 // ======================================
 
 #ifndef ROBOX_USER_INTERFACE_MSG_PROTOCOL_H

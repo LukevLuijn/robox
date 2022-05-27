@@ -1,8 +1,11 @@
-//
-// Created by luke on 16-05-22.
-//
+// ======================================
+// Filename:    LogToWidget.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        16-05-2022
+// ======================================
 
-#include "../include/logger/LogToWidget.h"
+#include "LogToWidget.h"
 #include "Controller.h"
 #include "LogPanel.h"
 #include "MainApplication.h"

@@ -1,9 +1,12 @@
-//
-// Created by luke on 18-05-22.
-//
+// ======================================
+// Filename:    RobotController.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        18-05-2022
+// ======================================
 
 #include "RobotController.h"
-#include "../include/logger/Logger.h"
+#include "Logger.h"
 
 namespace Driver
 {

@@ -1,6 +1,9 @@
-//
-// Created by luke on 15-05-22.
-//
+// ======================================
+// Filename:    String.h
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        15-05-2022
+// ======================================
 
 #ifndef TEMPLATE_STRING_H
 #define TEMPLATE_STRING_H

@@ -1,9 +1,12 @@
-//
-// Created by luke on 20-05-22.
-//
+// ======================================
+// Filename:    RobotDrawPanel.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        20-05-2022
+// ======================================
 
 #include "RobotDrawPanel.h"
-#include "../include/logger/Logger.h"
+#include "Logger.h"
 #include "RobotDriver.h"
 #include "String.h"
 

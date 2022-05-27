@@ -1,7 +1,9 @@
-//
-// Created by luke on 18-05-22.
-//
-
+// ======================================
+// Filename:    RobotController.h
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        18-05-2022
+// ======================================
 #ifndef ROBOX_UI_TESTS_ROBOTINTERFACE_H
 #define ROBOX_UI_TESTS_ROBOTINTERFACE_H
 

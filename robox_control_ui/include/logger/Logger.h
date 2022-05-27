@@ -1,7 +1,9 @@
-//
-// Created by luke on 15-05-22.
-//
-
+// ======================================
+// Filename:    Logger.h
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        15-05-2022
+// ======================================
 #ifndef ROBOX_USER_INTERFACE_LOGGER_H
 #define ROBOX_USER_INTERFACE_LOGGER_H
 

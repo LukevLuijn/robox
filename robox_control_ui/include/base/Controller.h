@@ -1,6 +1,9 @@
-//
-// Created by luke on 17-05-22.
-//
+// ======================================
+// Filename:    Controller.h
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        17-05-2022
+// ======================================
 
 #ifndef ROBOX_UI_TESTS_CONTROLLER_H
 #define ROBOX_UI_TESTS_CONTROLLER_H

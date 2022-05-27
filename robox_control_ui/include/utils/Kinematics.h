@@ -1,6 +1,9 @@
-//
-// Created by luke on 20-05-22.
-//
+// ======================================
+// Filename:    Kinematics.h
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        20-05-2022
+// ======================================
 
 #ifndef ROBOT_VISUAL_KINEMATICS_H
 #define ROBOT_VISUAL_KINEMATICS_H

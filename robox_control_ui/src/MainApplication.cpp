@@ -1,6 +1,9 @@
-//
-// Created by luke on 23-05-22.
-//
+// ======================================
+// Filename:    MainApplication.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        23-05-2022
+// ======================================
 
 #include "MainApplication.h"
 #include "Logger.h"

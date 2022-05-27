@@ -1,6 +1,9 @@
-//
-// Created by luke on 16-05-22.
-//
+// ======================================
+// Filename:    ScrolledLogWindow.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        16-05-2022
+// ======================================
 
 #include "ScrolledLogWindow.h"
 
@@ -10,16 +13,6 @@ namespace Widgets
     {
 #define MAX_BUFFER_SIZE 50
     }// namespace
-
-
-    namespace
-    {
-
-    }
-    //    /*static*/ wxBoxSizer* ScrolledLogWindow::m_sizer = new wxBoxSizer(wxVERTICAL);
-    //    /*static*/ std::array<bool, 4> ScrolledLogWindow::m_verbosity = {true, true, true, false};
-    //    /*static*/ std::vector<Utils::LogMessage> ScrolledLogWindow::m_backup;
-
 
     ScrolledLogWindow::ScrolledLogWindow(wxWindow* parent)
         : wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL),

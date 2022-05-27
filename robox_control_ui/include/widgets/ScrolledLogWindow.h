@@ -1,6 +1,9 @@
-//
-// Created by luke on 16-05-22.
-//
+// ======================================
+// Filename:    ScrolledLogWindow.h
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        16-05-2022
+// ======================================
 
 #ifndef ROBOX_USER_INTERFACE_SCROLLEDLOGWINDOW_H
 #define ROBOX_USER_INTERFACE_SCROLLEDLOGWINDOW_H

@@ -1,6 +1,9 @@
-//
-// Created by luke on 20-05-22.
-//
+// ======================================
+// Filename:    DrawPanel.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        20-05-2022
+// ======================================
 
 #include "DrawPanel.h"
 #include "wx/wx.h"

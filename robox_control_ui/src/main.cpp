@@ -1,6 +1,9 @@
-//
-// Created by luke on 06-05-22.
-//
+// ======================================
+// Filename:    main.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        06-05-2022
+// ======================================
 
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP

@@ -1,6 +1,9 @@
-//
-// Created by luke on 14-05-22.
-//
+// ======================================
+// Filename:    DataManager.h
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        14-05-2022
+// ======================================
 
 #ifndef ROBOC_UI_DATA_MANAGER_H
 #define ROBOC_UI_DATA_MANAGER_H

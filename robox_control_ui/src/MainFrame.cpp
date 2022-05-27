@@ -1,6 +1,9 @@
-//
-// Created by luke on 17-05-22.
-//
+// ======================================
+// Filename:    MainFrame.cpp
+// Project:     ROBOX Control UI
+// Author:      Luke van Luijn
+// Data:        17-05-2022
+// ======================================
 
 #include "MainFrame.h"
 #include "Bitmap.h"
