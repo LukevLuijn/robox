@@ -10,7 +10,6 @@
 
 #include <cstdint>
 
-// #include "communication/Message.h"
 #include "config/msg_protocol.h"
 
 namespace StateMachine

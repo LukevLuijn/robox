@@ -97,9 +97,9 @@ namespace Communication
         if (message.m_body.m_bufferSize == expectedBufferSize)
         {
             IDLE_POS_SEGMENT_00 = message.m_body.m_variables[0].toFloat();
-            IDLE_POS_SEGMENT_01 = message.m_body.m_variables[0].toFloat();
-            IDLE_POS_SEGMENT_02 = message.m_body.m_variables[0].toFloat();
-            IDLE_POS_SEGMENT_03 = message.m_body.m_variables[0].toFloat();
+            IDLE_POS_SEGMENT_01 = message.m_body.m_variables[1].toFloat();
+            IDLE_POS_SEGMENT_02 = message.m_body.m_variables[2].toFloat();
+            IDLE_POS_SEGMENT_03 = message.m_body.m_variables[3].toFloat();
         }
         else
         {
