@@ -62,7 +62,7 @@ namespace Device
          * @brief Pure virtual, can not be called.
          * 
          */
-        virtual void HomingSequence(float speed, float accel) = 0;
+        virtual void HomingSequence(float homingSpeed, float homingAccel, float speed, float accel ) = 0;
         /**
          * @brief Pure virtual, can not be called.
          * 

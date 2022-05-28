@@ -47,15 +47,15 @@ namespace Device
     {
         return (float) distanceToGo() / m_stepsPerDegree;
     }
-    void AxialActuator::HomingSequence(float speed, float accel)
+    void AxialActuator::HomingSequence(float homingSpeed, float homingAccel, float speed, float accel)
     {
         switch (m_homingStyle)
         {
             case HomingStyle_e::SINGLE_MAGNET:
-                HomeSingleMagnet(speed, accel);
+                HomeSingleMagnet(homingSpeed, homingAccel, speed, accel);
                 break;
             case HomingStyle_e::DOUBLE_MAGNET:
-                HomeDoubleMagnet(speed, accel);
+                HomeDoubleMagnet(homingSpeed, homingAccel, speed, accel);
                 break;
         }
     }
@@ -74,7 +74,7 @@ namespace Device
     {
         return m_stepsPerDegree;
     }
-    void AxialActuator::HomeSingleMagnet(float speed, float accel)
+    void AxialActuator::HomeSingleMagnet(float homingSpeed, float homingAccel, float speed, float accel)
     {
         const uint32_t INTERVAL_FAST = 300, INTERVAL_SLOW = 300;
 
@@ -84,8 +84,8 @@ namespace Device
             {
                 m_homingIndex = 0;
                 m_switch.Start();
-                setMaxSpeed(speed);
-                setAcceleration(accel);
+                setMaxSpeed(homingSpeed);
+                setAcceleration(homingAccel);
 
                 m_homingStateSingle = HomingStateSingle_e::FIRST_PASS;
             }
@@ -94,8 +94,8 @@ namespace Device
                 if (digitalRead(m_limitPin))
                 {
                     setCurrentPosition(0);
-                    setMaxSpeed(speed);
-                    setAcceleration(accel);
+                    setMaxSpeed(homingSpeed);
+                    setAcceleration(homingAccel);
                     m_homingIndex = 1;
                     m_homingStateSingle = HomingStateSingle_e::SECOND_PASS;
                 }
@@ -114,8 +114,8 @@ namespace Device
                     m_magnetPos01 = currentPosition();
 
                     setCurrentPosition(0);
-                    setMaxSpeed(speed);
-                    setAcceleration(accel);
+                    setMaxSpeed(homingSpeed);
+                    setAcceleration(homingAccel);
                     MoveDegrees(30.0f);
                     m_homingStateSingle = HomingStateSingle_e::MOVING_OFFSET;
                 }
@@ -147,8 +147,8 @@ namespace Device
                     m_magnetPos02 = currentPosition() + m_magnetPos01;
 
                     setCurrentPosition(0);
-                    setMaxSpeed(speed);
-                    setAcceleration(accel);
+                    setMaxSpeed(homingSpeed);
+                    setAcceleration(homingAccel);
 
                     float magnetDelta = m_magnetPos02 - m_magnetPos01;
                     float zeroPos = magnetDelta / 2;
@@ -187,7 +187,7 @@ namespace Device
                 break;
         }
     }
-    void AxialActuator::HomeDoubleMagnet(float speed, float accel)
+    void AxialActuator::HomeDoubleMagnet(float homingSpeed, float homingAccel, float speed, float accel)
     {
         const uint32_t INTERVAL_FAST = 750, INTERVAL_SLOW = 2500;
 
@@ -197,8 +197,8 @@ namespace Device
             {
                 pinMode(m_limitPin, INPUT);
                 m_homingIndex = 1;
-                setMaxSpeed(speed);
-                setAcceleration(accel);
+                setMaxSpeed(homingSpeed);
+                setAcceleration(homingAccel);
                 
                 m_homingStateDouble = HomingStateDouble_e::FM_FIRST_PASS;
             }
@@ -208,8 +208,8 @@ namespace Device
                 {
                     m_magnetPos01 = currentPosition();
                     setCurrentPosition(0);
-                    setMaxSpeed(speed);
-                    setAcceleration(accel);
+                    setMaxSpeed(homingSpeed);
+                    setAcceleration(homingAccel);
                     m_homingIndex = 0;
 
                     m_homingStateDouble = HomingStateDouble_e::FM_SECOND_PASS;
@@ -229,8 +229,8 @@ namespace Device
                     m_magnetPos01 += currentPosition();
                     setCurrentPosition(0);
 
-                    setMaxSpeed(speed);
-                    setAcceleration(accel);
+                    setMaxSpeed(homingSpeed);
+                    setAcceleration(homingAccel);
                     MoveDegrees(-150.0f);
 
                     m_homingStateDouble = HomingStateDouble_e::MOVING_OFFSET;
@@ -252,8 +252,8 @@ namespace Device
                 else
                 {
                     m_homingIndex = currentPosition();
-                    setMaxSpeed(speed);
-                    setAcceleration(accel);
+                    setMaxSpeed(homingSpeed);
+                    setAcceleration(homingAccel);
 
                     m_homingStateDouble = HomingStateDouble_e::SM_FIRST_PASS;
                 }
@@ -265,8 +265,8 @@ namespace Device
                 {
                     m_magnetPos02 = currentPosition();
                     setCurrentPosition(0);
-                    setMaxSpeed(speed);
-                    setAcceleration(accel);
+                    setMaxSpeed(homingSpeed);
+                    setAcceleration(homingAccel);
                     m_homingIndex = 1;
 
                     m_homingStateDouble = HomingStateDouble_e::SM_SECOND_PASS;
@@ -285,8 +285,8 @@ namespace Device
                 {
                     m_magnetPos02 += currentPosition();
                     setCurrentPosition(0);
-                    setMaxSpeed(speed);
-                    setAcceleration(accel);
+                    setMaxSpeed(homingSpeed);
+                    setAcceleration(homingAccel);
                     int32_t midPoint = m_magnetPos02 / 2;
                     (void) m_magnetPos01;
                     move(-midPoint);

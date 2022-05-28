@@ -77,7 +77,7 @@ namespace Device
          * @param speed The speed of this actuator.
          * @param accel The acceleration of this actuator.
          */
-        virtual void HomingSequence(float speed, float accel) override;
+        virtual void HomingSequence(float homingSpeed, float homingAccel, float speed, float accel ) override;
         /**
          * @brief Check is the homing sequence is completed.
          * 

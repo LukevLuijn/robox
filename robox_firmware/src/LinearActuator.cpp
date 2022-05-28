@@ -42,7 +42,7 @@ namespace Device
     {
         return distanceToGo() / m_stepsPerMillimeter;
     }
-    void LinearActuator::HomingSequence(float speed, float accel)
+    void LinearActuator::HomingSequence(float homingSpeed, float homingAccel, float speed, float accel )
     {
         const uint32_t INTERVAL_FAST = 300, INTERVAL_SLOW = 1000;
 
@@ -51,8 +51,8 @@ namespace Device
             case HomingState_e::SETUP:
             {
                 m_switch.Start();
-                setMaxSpeed(speed);
-                setAcceleration(accel);
+                setMaxSpeed(homingSpeed);
+                setAcceleration(homingAccel);
 
                 m_homingIndex = 1;
                 m_homingState = HomingState_e::FIRST_PASS;
@@ -62,8 +62,8 @@ namespace Device
                 if (digitalRead(m_limitPin))
                 {
                     setCurrentPosition(0);
-                    setMaxSpeed(speed);
-                    setAcceleration(accel);
+                    setMaxSpeed(homingSpeed);
+                    setAcceleration(homingAccel);
 
                     m_homingIndex = 0;
                     m_homingState = HomingState_e::SECOND_PASS;
