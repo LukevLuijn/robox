@@ -1,6 +1,8 @@
 
 # ROBOX Models
 
+This directory contains all .stl files needed to print your own ROBOX.
+
 ## Robox assembly
 
 |||
@@ -10,29 +12,10 @@
 
 ## Segments
 
-||
-|:---:|
-|<img width="10000" src="assets/s0_full_part.png"  alt="robox_segment_00"/>|
-|**Image 3** - *Segment 00*|
-
-||
-|:---:|
-|<img width="10000" src="assets/s1_full_part.png"  alt="robox_segment_01"/>|
-|**Image 4** - *Segment 01*|
-
-||
-|:---:|
-|<img width="10000" src="assets/s2_full_part.png"  alt="robox_segment_02"/>|
-|**Image 5** - *Segment 02*|
-
-
-||
-|:---:|
-|<img width="10000" src="assets/s3_full_part.png"  alt="robox_segment_03"/>|
-|**Image 6** - *Segment 03*|
-
-||
-|:---:|
-|<img width="10000" src="assets/grip_full_part.png"  alt="robox_gripper_electro_magnet"/>|
-|**Image 7** - *Gripper Electromagnet*|
+|||
+|:---:|:---:|
+|<img width="10000" src="assets/s0_full_part.png"  alt="robox_segment_00"/>|<img width="10000" src="assets/s1_full_part.png"  alt="robox_segment_01"/>|
+|**Image 3** - *Segment 00*|**Image 4** - *Segment 01*|
+|<img width="10000" src="assets/s2_full_part.png"  alt="robox_segment_02"/>|<img width="10000" src="assets/s3_full_part.png"  alt="robox_segment_03"/>|
+|**Image 5** - *Segment 02*|**Image 6** - *Segment 03*|
 
