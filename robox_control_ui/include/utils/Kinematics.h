@@ -2,7 +2,10 @@
 // Filename:    Kinematics.h
 // Project:     ROBOX Control UI
 // Author:      Luke van Luijn
-// Data:        20-05-2022
+// Date:        20-05-2022
+// ======================================
+// Source:          https://github.com/henriksod/Fabrik2DArduino
+// Original author: Henrik Söderlund
 // ======================================
 
 #ifndef ROBOX_CONTROL_UI_KINEMATICS_H

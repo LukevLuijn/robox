@@ -5,10 +5,10 @@
 // Data:        15-05-2022
 // ======================================
 
-#include "../include/logger/Logger.h"
+#include "Logger.h"
 
-#include "../include/logger/LogToConsole.h"
-#include "../include/logger/LogToWidget.h"
+#include "LogToConsole.h"
+#include "LogToWidget.h"
 
 #include "global_config.h"
 

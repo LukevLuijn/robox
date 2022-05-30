@@ -8,8 +8,6 @@
 #include "DrawPanel.h"
 #include "wx/wx.h"
 
-
-
 namespace Widgets
 {
     DrawPanel::DrawPanel(wxWindow* parent)

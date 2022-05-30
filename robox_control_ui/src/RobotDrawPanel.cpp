@@ -6,7 +6,6 @@
 // ======================================
 
 #include "RobotDrawPanel.h"
-#include "Logger.h"
 #include "RobotDriver.h"
 #include "String.h"
 

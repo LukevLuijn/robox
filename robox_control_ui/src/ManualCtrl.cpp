@@ -58,8 +58,6 @@ namespace Frame
     }
     void ManualCtrl::ResetPanel()
     {
-        // TODO
-
         m_toggleAuto->SetValue(false);
         wxCommandEvent eventToggle(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED);
         OnToggleAuto(eventToggle);
