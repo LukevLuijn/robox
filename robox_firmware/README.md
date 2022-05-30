@@ -3,12 +3,6 @@
 
 This page contains the firmware for the ROBOX project. The firmware is produced to be run on a Teensy 4.0, it uses no external libraries.
 
-For the full documentation go to [this page](https://github.com/LukevLuijn/robox_docs). All documentation is written in dutch.
-
-## Messaging protocol
-
-The messaging protocol used in this project can be found [here](https://github.com/LukevLuijn/robox_docs/blob/main/protocol/protocol_description.pdf)
-
 ## Wiring diagram
 
 ||

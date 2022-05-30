@@ -2,14 +2,6 @@
 
 This page contains the software application for the ROBOX project. The software application uses the libraries wxWidgets & boost.
 
-The messaging protocol used in this project can be found [here](https://github.com/LukevLuijn/robox_docs/blob/main/protocol/protocol_description.pdf).
-
-The Interface description can be found [here]()
-
-
-
-For the full documentation go to [this page](https://github.com/LukevLuijn/robox_docs). All documentation is written in dutch.
-
 ## Installation instructions
 
 ```bash
