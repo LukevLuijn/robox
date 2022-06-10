@@ -7,6 +7,7 @@
 #include "BKECtrl.h"
 #include "Logger.h"
 
+#include "RobotController.h"
 
 namespace Frame
 {
@@ -25,11 +26,73 @@ namespace Frame
     }
     void BKECtrl::UpdateData(DataType_e responseType)
     {
-        // TODO?
+        switch (responseType)
+        {
+            case DataType_e::HOMING_COMPLETE:
+                INFO("Homing sequence complete");
+                std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                SyncFields();
+//                Enable();
+                break;
+            case DataType_e::GET_STATIC:
+                UpdateFields();
+                break;
+            case DataType_e::GET_RUNTIME:
+            case DataType_e::GET_DYNAMIC:
+            case DataType_e::SET_SPEED_ACCEL:
+            case DataType_e::SET_VERBOSITY:
+            case DataType_e::SET_FRAME_OFFSET:
+            case DataType_e::SET_GRIP_OFFSET:
+            case DataType_e::SET_IDLE_POSITIONS:
+            default:
+                break;
+        }
+        Refresh();
+        Update();
     }
     void BKECtrl::ResetPanel()
     {
         // TODO
+    }
+    void BKECtrl::SyncFields()
+    {
+        const float startSpeed = 100*100;
+        const float startAccel = 100*100;
+
+        m_fieldSpeed->SetValue(Utils::String::ToString(startSpeed / 100, 2));
+        m_fieldAccel->SetValue(Utils::String::ToString(startAccel / 100, 2));
+
+        m_sliderSpeed->SetValue(static_cast<int32_t>(startSpeed));
+        m_sliderAccel->SetValue(static_cast<int32_t>(startAccel));
+
+        Driver::RobotController::GetInstance().SetNewSpeed(startSpeed/100);
+        Driver::RobotController::GetInstance().SetNewAccel(startAccel/100);
+
+        m_sliderAccel->Refresh();
+        m_sliderSpeed->Refresh();
+
+        Refresh();
+        Update();
+
+        INFO("BKECtrl fields synchronized");
+    }
+    void BKECtrl::UpdateFields()
+    {
+        m_minMaxValues[(size_t)Fields_e::FIELD_SPEED].first = 0;
+        m_minMaxValues[(size_t)Fields_e::FIELD_SPEED].second = 100;
+        m_minMaxValues[(size_t)Fields_e::FIELD_ACCEL].first = 0;
+        m_minMaxValues[(size_t)Fields_e::FIELD_ACCEL].second = 100;
+
+        m_sliderSpeed->SetMin(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].first * 100));
+        m_sliderSpeed->SetMax(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].second * 100));
+
+        m_sliderAccel->SetMin(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_ACCEL].first * 100));
+        m_sliderAccel->SetMax(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_ACCEL].second * 100));
+
+        Refresh();
+        Update();
+
+        INFO("BKECtrl fields updated");
     }
     void BKECtrl::OnKillFocusSpeed(wxFocusEvent& event)
     {
@@ -206,8 +269,8 @@ namespace Frame
         fgSizer7->Fit(m_speedPanel);
         mainSizer->Add(m_speedPanel, 0, wxEXPAND, 5);
 
-        m_staticline21 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
-        mainSizer->Add(m_staticline21, 0, wxEXPAND | wxALL, 5);
+        m_staticLine21 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+        mainSizer->Add(m_staticLine21, 0, wxEXPAND | wxALL, 5);
 
         m_turnPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
         wxBoxSizer* bSizer29;
@@ -217,12 +280,12 @@ namespace Frame
         m_textTurn->Wrap(-1);
         bSizer29->Add(m_textTurn, 0, wxALL, 5);
 
-        m_staticline25 = new wxStaticLine(m_turnPanel,
+        m_staticLine25 = new wxStaticLine(m_turnPanel,
                                           wxID_ANY,
                                           wxDefaultPosition,
                                           wxDefaultSize,
                                           wxLI_HORIZONTAL | wxLI_VERTICAL);
-        bSizer29->Add(m_staticline25, 0, wxEXPAND | wxALL, 5);
+        bSizer29->Add(m_staticLine25, 0, wxEXPAND | wxALL, 5);
 
         m_textTurnRobox = new wxStaticText(m_turnPanel,
                                            wxID_ANY,
@@ -233,12 +296,12 @@ namespace Frame
         m_textTurnRobox->Wrap(-1);
         bSizer29->Add(m_textTurnRobox, 1, wxALL, 5);
 
-        m_staticline24 = new wxStaticLine(m_turnPanel,
+        m_staticLine24 = new wxStaticLine(m_turnPanel,
                                           wxID_ANY,
                                           wxDefaultPosition,
                                           wxDefaultSize,
                                           wxLI_HORIZONTAL | wxLI_VERTICAL);
-        bSizer29->Add(m_staticline24, 0, wxEXPAND | wxALL, 5);
+        bSizer29->Add(m_staticLine24, 0, wxEXPAND | wxALL, 5);
 
         m_textTurnUser = new wxStaticText(m_turnPanel,
                                           wxID_ANY,
@@ -255,8 +318,8 @@ namespace Frame
         bSizer29->Fit(m_turnPanel);
         mainSizer->Add(m_turnPanel, 0, wxEXPAND, 5);
 
-        m_staticline22 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
-        mainSizer->Add(m_staticline22, 0, wxEXPAND | wxALL, 5);
+        m_staticLine22 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+        mainSizer->Add(m_staticLine22, 0, wxEXPAND | wxALL, 5);
 
         m_boardPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
         wxBoxSizer* bSizer30;
@@ -366,8 +429,8 @@ namespace Frame
         bSizer30->Fit(m_boardPanel);
         mainSizer->Add(m_boardPanel, 1, wxEXPAND, 5);
 
-        m_staticline23 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
-        mainSizer->Add(m_staticline23, 0, wxEXPAND | wxALL, 5);
+        m_staticLine23 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+        mainSizer->Add(m_staticLine23, 0, wxEXPAND | wxALL, 5);
 
         m_statsPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
         wxBoxSizer* bSizer33;
@@ -405,12 +468,12 @@ namespace Frame
         fgSizer8->Fit(m_panel42);
         bSizer33->Add(m_panel42, 1, wxEXPAND | wxALL, 5);
 
-        m_staticline28 = new wxStaticLine(m_statsPanel,
+        m_staticLine28 = new wxStaticLine(m_statsPanel,
                                           wxID_ANY,
                                           wxDefaultPosition,
                                           wxDefaultSize,
                                           wxLI_HORIZONTAL | wxLI_VERTICAL);
-        bSizer33->Add(m_staticline28, 0, wxEXPAND | wxALL, 5);
+        bSizer33->Add(m_staticLine28, 0, wxEXPAND | wxALL, 5);
 
         m_panel43 = new wxPanel(m_statsPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
         wxFlexGridSizer* fgSizer9;
@@ -493,6 +556,8 @@ namespace Frame
         this->SetSizer(mainSizer);
         this->Layout();
         mainSizer->Fit(this);
+
+//        Disable();
     }
     void BKECtrl::ConnectEvents()
     {

@@ -36,7 +36,7 @@ namespace Frame
                 INFO("Homing sequence complete");
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
                 SyncFields();
-                Enable();
+//                Enable();
                 break;
             case DataType_e::GET_RUNTIME:
                 m_drawPanel->UpdateData();
@@ -710,7 +710,7 @@ namespace Frame
         this->Layout();
 
         this->Centre(wxBOTH);
-        Disable();
+//        Disable();
     }
     void ManualCtrl::ConnectEvents()
     {

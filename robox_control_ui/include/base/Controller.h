@@ -57,6 +57,7 @@ namespace Base
 
     private:
         FrameBuilder builder;
+        bool m_controlActive;
     };
 }// namespace Base
 

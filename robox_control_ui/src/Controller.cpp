@@ -19,7 +19,7 @@ namespace Base
             return std::bind(&Controller::ResponseCallback, &instance, std::placeholders::_1);
         }
     }
-    Controller::Controller() : Frame::MainFrame(nullptr)
+    Controller::Controller() : Frame::MainFrame(nullptr), m_controlActive(false)
     {
         SetNewControlFrame(Frame::FrameTypes_e::MANUAL_CTRL);
         Bind(UPDATE_EVENT, &Controller::OnUpdateEvent, this);
@@ -47,6 +47,15 @@ namespace Base
     {
         SetNewControlFrame(Frame::FrameTypes_e::MANUAL_CTRL);
         INFO("New control method set", "Manual control");
+
+        if (m_buttonMenuActivate->GetValue())
+        {
+            // if already homed, reset fields.
+            builder.UpdateControlPanel(DataType_e::GET_RUNTIME);
+            builder.UpdateControlPanel(DataType_e::GET_STATIC);
+            builder.UpdateControlPanel(DataType_e::HOMING_COMPLETE);
+        }
+
         event.Skip();
     }
     void Controller::OnClickKeyboard(wxCommandEvent& event)
@@ -59,6 +68,14 @@ namespace Base
     {
         SetNewControlFrame(Frame::FrameTypes_e::BKE_CTRL);
         INFO("New control method set", "BKE control");
+
+        if (m_buttonMenuActivate->GetValue())
+        {
+            // if already homed, reset fields.
+            builder.UpdateControlPanel(DataType_e::GET_STATIC);
+            builder.UpdateControlPanel(DataType_e::HOMING_COMPLETE);
+        }
+
         event.Skip();
     }
     void Controller::OnClickSettings(wxCommandEvent& event)
@@ -142,7 +159,14 @@ namespace Base
     }
     void Controller::OnUpdateEvent(wxCommandEvent& event)
     {
-        builder.UpdateControlPanel(static_cast<DataType_e>(event.GetString()[1] - '0'));
+        auto type = static_cast<DataType_e>(event.GetString()[1] - '0');
+        builder.UpdateControlPanel(type);
+
+        if (type == DataType_e::HOMING_COMPLETE)
+        {
+            m_controlActive = true;
+            m_placeholder->Enable();
+        }
         event.Skip();
     }
     void Controller::OnLogEvent(wxCommandEvent& event)
@@ -170,21 +194,29 @@ namespace Base
         m_placeholderSizer->FitInside(m_placeholderSizer->GetContainingWindow());
         m_placeholderSizer->GetContainingWindow()->Update();
 
-        if (!m_buttonMenuActivate->GetValue())
-        {
-            m_placeholder->Disable();
-        }
-
+//        if (!m_buttonMenuActivate->GetValue())
+//        {
+//            m_placeholder->Disable();
+//        }
         for (wxButton* button : m_menuButtons)
         {
             button->Enable();
         }
         m_menuButtons[(size_t) type]->Disable();
+
+        if (m_controlActive)
+        {
+            m_placeholder->Enable();
+        }
+        else
+        {
+            m_placeholder->Disable();
+        }
     }
     void Controller::ActivateControl()
     {
         m_buttonMenuRun->Enable();
-        m_placeholder->Enable();
+//        m_placeholder->Enable();
         m_buttonMenuStop->Enable();
         m_buttonMenuEStop->Enable();
         m_buttonMenuActivate->SetLabel("Deactivate");
@@ -202,6 +234,8 @@ namespace Base
         m_buttonMenuActivate->SetLabel("Activate");
 
         builder.ResetControlPanel();
+
+        m_controlActive = false;
     }
     void Controller::PostLogEvent()
     {

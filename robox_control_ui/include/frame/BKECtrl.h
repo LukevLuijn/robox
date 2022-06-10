@@ -27,6 +27,10 @@ namespace Frame
         void ResetPanel() override;
 
     private:
+        void UpdateFields();
+        void SyncFields();
+
+    private:
         virtual void OnKillFocusSpeed( wxFocusEvent& event );
         virtual void OnTextEnterSpeed( wxCommandEvent& event );
         virtual void OnTextMaxLenSpeed( wxCommandEvent& event );
@@ -53,9 +57,9 @@ namespace Frame
         void InitializeFrame();
         void ConnectEvents();
         void DisconnectEvents();
-
     private:
-//        wxPanel* m_bkePanel;
+        std::array<std::pair<float,float>, 2> m_minMaxValues;
+    private:
         wxPanel* m_speedPanel{};
         wxPanel* m_boardPanel{};
         wxPanel* m_panel39{};
@@ -70,12 +74,12 @@ namespace Frame
         wxSlider* m_sliderSpeed{};
         wxSlider* m_sliderAccel{};
 
-        wxStaticLine* m_staticline21{};
-        wxStaticLine* m_staticline25{};
-        wxStaticLine* m_staticline24{};
-        wxStaticLine* m_staticline22{};
-        wxStaticLine* m_staticline23{};
-        wxStaticLine* m_staticline28{};
+        wxStaticLine* m_staticLine21{};
+        wxStaticLine* m_staticLine25{};
+        wxStaticLine* m_staticLine24{};
+        wxStaticLine* m_staticLine22{};
+        wxStaticLine* m_staticLine23{};
+        wxStaticLine* m_staticLine28{};
 
         wxButton* m_buttonResetBoard{};
         wxButton* m_buttonHome{};

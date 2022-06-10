@@ -45,6 +45,15 @@ namespace Frame
         SETTINGS = 3,
         ABOUT = 4,
     };
+    enum class Fields_e : uint8_t
+    {
+        FIELD_SPEED = 0,
+        FIELD_ACCEL = 1,
+        FIELD_Z = 2,
+        FIELD_A1 = 3,
+        FIELD_A2 = 4,
+        FIELD_A3 = 5,
+    };
 }// namespace Frame
 
 #endif//ROBOX_CONTROL_UI_FRAME_INTERFACE_H
