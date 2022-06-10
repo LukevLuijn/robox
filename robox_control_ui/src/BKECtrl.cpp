@@ -7,11 +7,16 @@
 #include "BKECtrl.h"
 #include "Logger.h"
 
+#include "BKEDriver.h"
+#include "Bitmap.h"
 #include "RobotController.h"
 
 namespace Frame
 {
-    BKECtrl::BKECtrl(wxWindow* parent) : IFrame(parent)
+    BKECtrl::BKECtrl(wxWindow* parent)
+        : IFrame(parent), m_bitmapPieceO(Utils::Bitmap::CreateBitmap("piece_o.png", wxSize(80, 80))),
+          m_bitmapPieceX(Utils::Bitmap::CreateBitmap("piece_x.png", wxSize(80, 80))),
+          m_bitmapEmpty(Utils::Bitmap::SetTransparent(m_bitmapPieceX))
     {
         InitializeFrame();
         ConnectEvents();
@@ -32,7 +37,7 @@ namespace Frame
                 INFO("Homing sequence complete");
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
                 SyncFields();
-//                Enable();
+                //                Enable();
                 break;
             case DataType_e::GET_STATIC:
                 UpdateFields();
@@ -54,10 +59,53 @@ namespace Frame
     {
         // TODO
     }
+    void BKECtrl::UpdateBKE(BKEType_e type)
+    {
+        switch (type)
+        {
+            case BKEType_e::BOARD_UPDATE:
+            {
+                for (std::size_t i = 0; i < Driver::BKEDriver::m_board.size(); ++i)
+                {
+                    switch (static_cast<BKEPiece_e>(Driver::BKEDriver::m_board[i]))
+                    {
+                        case BKEPiece_e::NO_PIECE:
+                        {
+//                            m_boardButtons[i]->SetBackgroundColour(GetBackgroundColour());
+                            m_boardButtons[i]->SetBitmap(m_bitmapEmpty);
+                        }
+                        break;
+                        case BKEPiece_e::O_PIECE:
+                        {
+//                            m_boardButtons[i]->SetBackgroundColour(wxColor(121,198,226));
+
+                            m_boardButtons[i]->SetBitmap(m_bitmapPieceO);
+                        }
+                        break;
+                        case BKEPiece_e::X_PIECE:
+                        {
+//                            m_boardButtons[i]->SetBackgroundColour(wxColor(150,150,150));
+                            m_boardButtons[i]->SetBitmap(m_bitmapPieceX);
+
+                        }
+                        break;
+                    }
+                    m_boardButtons[i]->Refresh();
+                    m_boardButtons[i]->Update();
+                }
+            }
+            break;
+            case BKEType_e::GAME_RESULT:
+            {
+
+            }
+            break;
+        }
+    }
     void BKECtrl::SyncFields()
     {
-        const float startSpeed = 100*100;
-        const float startAccel = 100*100;
+        const float startSpeed = 100 * 100;
+        const float startAccel = 100 * 100;
 
         m_fieldSpeed->SetValue(Utils::String::ToString(startSpeed / 100, 2));
         m_fieldAccel->SetValue(Utils::String::ToString(startAccel / 100, 2));
@@ -65,8 +113,8 @@ namespace Frame
         m_sliderSpeed->SetValue(static_cast<int32_t>(startSpeed));
         m_sliderAccel->SetValue(static_cast<int32_t>(startAccel));
 
-        Driver::RobotController::GetInstance().SetNewSpeed(startSpeed/100);
-        Driver::RobotController::GetInstance().SetNewAccel(startAccel/100);
+        Driver::RobotController::GetInstance().SetNewSpeed(startSpeed / 100);
+        Driver::RobotController::GetInstance().SetNewAccel(startAccel / 100);
 
         m_sliderAccel->Refresh();
         m_sliderSpeed->Refresh();
@@ -76,12 +124,38 @@ namespace Frame
 
         INFO("BKECtrl fields synchronized");
     }
+    bool BKECtrl::OnTextEnter(wxTextCtrl* textCtrl, wxSlider* slider, float& value, Fields_e field)
+    {
+        float min = m_minMaxValues[(size_t) field].first;
+        float max = m_minMaxValues[(size_t) field].second;
+        std::string textValue = textCtrl->GetValue().ToStdString();
+
+        if (!Utils::String::ValidateNumber(value, textValue, min, max))
+        {
+            textCtrl->SetForegroundColour(wxColour(255, 0, 0));
+        }
+        else
+        {
+            textCtrl->SetForegroundColour(wxColour(0, 0, 0));
+            textCtrl->SetValue(Utils::String::ToString(value));
+            slider->SetValue(static_cast<int32_t>(value * 100));
+            INFO("New value set");
+            return true;
+        }
+        ERROR("Could not translate input");
+        return false;
+    }
+    void BKECtrl::OnSliderMove(wxTextCtrl* textCtrl, wxSlider* slider)
+    {
+        auto value = static_cast<float>(slider->GetValue()) / 100;
+        textCtrl->SetValue(Utils::String::ToString(value, 2));
+    }
     void BKECtrl::UpdateFields()
     {
-        m_minMaxValues[(size_t)Fields_e::FIELD_SPEED].first = 0;
-        m_minMaxValues[(size_t)Fields_e::FIELD_SPEED].second = 100;
-        m_minMaxValues[(size_t)Fields_e::FIELD_ACCEL].first = 0;
-        m_minMaxValues[(size_t)Fields_e::FIELD_ACCEL].second = 100;
+        m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].first = 0;
+        m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].second = 100;
+        m_minMaxValues[(size_t) Fields_e::FIELD_ACCEL].first = 0;
+        m_minMaxValues[(size_t) Fields_e::FIELD_ACCEL].second = 100;
 
         m_sliderSpeed->SetMin(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].first * 100));
         m_sliderSpeed->SetMax(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].second * 100));
@@ -96,107 +170,128 @@ namespace Frame
     }
     void BKECtrl::OnKillFocusSpeed(wxFocusEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        wxCommandEvent commandEvent(wxEVT_COMMAND_TEXT_ENTER);
+        OnTextEnterSpeed(commandEvent);
         event.Skip();
     }
     void BKECtrl::OnTextEnterSpeed(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        float value = 0.f;
+        if (OnTextEnter(m_fieldSpeed, m_sliderSpeed, value, Fields_e::FIELD_SPEED))
+        {
+            Driver::RobotController::GetInstance().SetNewSpeed(value);
+        }
         event.Skip();
     }
     void BKECtrl::OnTextMaxLenSpeed(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        WARNING("Max amount of characters reached.", "6");
         event.Skip();
     }
     void BKECtrl::OnSliderReleaseSpeed(wxScrollEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        wxCommandEvent commandEvent(wxEVT_COMMAND_TEXT_ENTER);
+        OnTextEnterSpeed(commandEvent);
         event.Skip();
     }
     void BKECtrl::OnSliderSpeed(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        OnSliderMove(m_fieldSpeed, m_sliderSpeed);
         event.Skip();
     }
     void BKECtrl::OnKillFocusAccel(wxFocusEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        wxCommandEvent commandEvent(wxEVT_COMMAND_TEXT_ENTER);
+        OnTextEnterAccel(commandEvent);
         event.Skip();
     }
     void BKECtrl::OnTextEnterAccel(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        float value = 0.f;
+        if (OnTextEnter(m_fieldAccel, m_sliderAccel, value, Fields_e::FIELD_ACCEL))
+        {
+            Driver::RobotController::GetInstance().SetNewAccel(value);
+        }
         event.Skip();
     }
     void BKECtrl::OnTextMaxLenAccel(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        WARNING("Max amount of characters reached.", "6");
         event.Skip();
     }
     void BKECtrl::OnSliderReleaseAccel(wxScrollEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        wxCommandEvent commandEvent(wxEVT_COMMAND_TEXT_ENTER);
+        OnTextEnterAccel(commandEvent);
         event.Skip();
     }
     void BKECtrl::OnSliderAccel(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        OnSliderMove(m_fieldAccel, m_sliderAccel);
         event.Skip();
     }
     void BKECtrl::OnClickResetBoard(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__ );
+        INFO("Reset board TODO");
         event.Skip();
     }
     void BKECtrl::OnClickGoToHome(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        Driver::RobotController::GetInstance().SetNewPositionA0(
+                Driver::RobotDriver::m_dataManager.m_segment00.m_idlePosition / 2);
+        Driver::RobotController::GetInstance().SetNewPositionA1(
+                Driver::RobotDriver::m_dataManager.m_segment01.m_idlePosition);
+        Driver::RobotController::GetInstance().SetNewPositionA2(
+                Driver::RobotDriver::m_dataManager.m_segment02.m_idlePosition);
+        Driver::RobotController::GetInstance().SetNewPositionA3(
+                Driver::RobotDriver::m_dataManager.m_segment03.m_idlePosition);
+        Driver::RobotController::GetInstance().RunRobot();
+
         event.Skip();
     }
     void BKECtrl::OnClickBoard00(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        INFO("FROM BKE");
         event.Skip();
     }
     void BKECtrl::OnClickBoard01(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        INFO("FROM BKE");
         event.Skip();
     }
     void BKECtrl::OnClickBoard02(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        INFO("FROM BKE");
         event.Skip();
     }
     void BKECtrl::OnClickBoard03(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        INFO("FROM BKE");
         event.Skip();
     }
     void BKECtrl::OnClickBoard04(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        INFO("FROM BKE");
         event.Skip();
     }
     void BKECtrl::OnClickBoard05(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        INFO("FROM BKE");
         event.Skip();
     }
     void BKECtrl::OnClickBoard06(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        INFO("FROM BKE");
         event.Skip();
     }
     void BKECtrl::OnClickBoard07(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        INFO("FROM BKE");
         event.Skip();
     }
     void BKECtrl::OnClickBoard08(wxCommandEvent& event)
     {
-        DEBUG(__PRETTY_FUNCTION__);
+        INFO("FROM BKE");
         event.Skip();
     }
     void BKECtrl::InitializeFrame()
@@ -345,77 +440,77 @@ namespace Frame
         wxGridSizer* gSizer5;
         gSizer5 = new wxGridSizer(3, 3, 0, 0);
 
-        m_buttonBoard0 = new wxBitmapButton(m_panel39,
-                                            wxID_ANY,
-                                            wxNullBitmap,
-                                            wxDefaultPosition,
-                                            wxDefaultSize,
-                                            wxBU_AUTODRAW | 0);
-        gSizer5->Add(m_buttonBoard0, 1, wxALL | wxEXPAND, 5);
+        m_boardButtons[0] = new wxBitmapButton(m_panel39,
+                                               wxID_ANY,
+                                               wxNullBitmap,
+                                               wxDefaultPosition,
+                                               wxDefaultSize,
+                                               wxBU_AUTODRAW | 0);
+        gSizer5->Add(m_boardButtons[0], 1, wxALL | wxEXPAND, 5);
 
-        m_buttonBoard1 = new wxBitmapButton(m_panel39,
-                                            wxID_ANY,
-                                            wxNullBitmap,
-                                            wxDefaultPosition,
-                                            wxDefaultSize,
-                                            wxBU_AUTODRAW | 0);
-        gSizer5->Add(m_buttonBoard1, 1, wxALL | wxEXPAND, 5);
+        m_boardButtons[1] = new wxBitmapButton(m_panel39,
+                                               wxID_ANY,
+                                               wxNullBitmap,
+                                               wxDefaultPosition,
+                                               wxDefaultSize,
+                                               wxBU_AUTODRAW | 0);
+        gSizer5->Add(m_boardButtons[1], 1, wxALL | wxEXPAND, 5);
 
-        m_buttonBoard2 = new wxBitmapButton(m_panel39,
-                                            wxID_ANY,
-                                            wxNullBitmap,
-                                            wxDefaultPosition,
-                                            wxDefaultSize,
-                                            wxBU_AUTODRAW | 0);
-        gSizer5->Add(m_buttonBoard2, 1, wxALL | wxEXPAND, 5);
+        m_boardButtons[2] = new wxBitmapButton(m_panel39,
+                                               wxID_ANY,
+                                               wxNullBitmap,
+                                               wxDefaultPosition,
+                                               wxDefaultSize,
+                                               wxBU_AUTODRAW | 0);
+        gSizer5->Add(m_boardButtons[2], 1, wxALL | wxEXPAND, 5);
 
-        m_buttonBoard3 = new wxBitmapButton(m_panel39,
-                                            wxID_ANY,
-                                            wxNullBitmap,
-                                            wxDefaultPosition,
-                                            wxDefaultSize,
-                                            wxBU_AUTODRAW | 0);
-        gSizer5->Add(m_buttonBoard3, 1, wxALL | wxEXPAND, 5);
+        m_boardButtons[3] = new wxBitmapButton(m_panel39,
+                                               wxID_ANY,
+                                               wxNullBitmap,
+                                               wxDefaultPosition,
+                                               wxDefaultSize,
+                                               wxBU_AUTODRAW | 0);
+        gSizer5->Add(m_boardButtons[3], 1, wxALL | wxEXPAND, 5);
 
-        m_buttonBoard4 = new wxBitmapButton(m_panel39,
-                                            wxID_ANY,
-                                            wxNullBitmap,
-                                            wxDefaultPosition,
-                                            wxDefaultSize,
-                                            wxBU_AUTODRAW | 0);
-        gSizer5->Add(m_buttonBoard4, 1, wxALL | wxEXPAND, 5);
+        m_boardButtons[4] = new wxBitmapButton(m_panel39,
+                                               wxID_ANY,
+                                               wxNullBitmap,
+                                               wxDefaultPosition,
+                                               wxDefaultSize,
+                                               wxBU_AUTODRAW | 0);
+        gSizer5->Add(m_boardButtons[4], 1, wxALL | wxEXPAND, 5);
 
-        m_buttonBoard5 = new wxBitmapButton(m_panel39,
-                                            wxID_ANY,
-                                            wxNullBitmap,
-                                            wxDefaultPosition,
-                                            wxDefaultSize,
-                                            wxBU_AUTODRAW | 0);
-        gSizer5->Add(m_buttonBoard5, 1, wxALL | wxEXPAND, 5);
+        m_boardButtons[5] = new wxBitmapButton(m_panel39,
+                                               wxID_ANY,
+                                               wxNullBitmap,
+                                               wxDefaultPosition,
+                                               wxDefaultSize,
+                                               wxBU_AUTODRAW | 0);
+        gSizer5->Add(m_boardButtons[5], 1, wxALL | wxEXPAND, 5);
 
-        m_buttonBoard6 = new wxBitmapButton(m_panel39,
-                                            wxID_ANY,
-                                            wxNullBitmap,
-                                            wxDefaultPosition,
-                                            wxDefaultSize,
-                                            wxBU_AUTODRAW | 0);
-        gSizer5->Add(m_buttonBoard6, 1, wxALL | wxEXPAND, 5);
+        m_boardButtons[6] = new wxBitmapButton(m_panel39,
+                                               wxID_ANY,
+                                               wxNullBitmap,
+                                               wxDefaultPosition,
+                                               wxDefaultSize,
+                                               wxBU_AUTODRAW | 0);
+        gSizer5->Add(m_boardButtons[6], 1, wxALL | wxEXPAND, 5);
 
-        m_buttonBoard7 = new wxBitmapButton(m_panel39,
-                                            wxID_ANY,
-                                            wxNullBitmap,
-                                            wxDefaultPosition,
-                                            wxDefaultSize,
-                                            wxBU_AUTODRAW | 0);
-        gSizer5->Add(m_buttonBoard7, 1, wxALL | wxEXPAND, 5);
+        m_boardButtons[7] = new wxBitmapButton(m_panel39,
+                                               wxID_ANY,
+                                               wxNullBitmap,
+                                               wxDefaultPosition,
+                                               wxDefaultSize,
+                                               wxBU_AUTODRAW | 0);
+        gSizer5->Add(m_boardButtons[7], 1, wxALL | wxEXPAND, 5);
 
-        m_buttonBoard8 = new wxBitmapButton(m_panel39,
-                                            wxID_ANY,
-                                            wxNullBitmap,
-                                            wxDefaultPosition,
-                                            wxDefaultSize,
-                                            wxBU_AUTODRAW | 0);
-        gSizer5->Add(m_buttonBoard8, 1, wxALL | wxEXPAND, 5);
+        m_boardButtons[8] = new wxBitmapButton(m_panel39,
+                                               wxID_ANY,
+                                               wxNullBitmap,
+                                               wxDefaultPosition,
+                                               wxDefaultSize,
+                                               wxBU_AUTODRAW | 0);
+        gSizer5->Add(m_boardButtons[8], 1, wxALL | wxEXPAND, 5);
 
 
         m_panel39->SetSizer(gSizer5);
@@ -557,7 +652,7 @@ namespace Frame
         this->Layout();
         mainSizer->Fit(this);
 
-//        Disable();
+        //        Disable();
     }
     void BKECtrl::ConnectEvents()
     {
@@ -597,42 +692,42 @@ namespace Frame
                               wxCommandEventHandler(BKECtrl::OnClickGoToHome),
                               nullptr,
                               this);
-        m_buttonBoard0->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                wxCommandEventHandler(BKECtrl::OnClickBoard00),
-                                nullptr,
-                                this);
-        m_buttonBoard1->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                wxCommandEventHandler(BKECtrl::OnClickBoard01),
-                                nullptr,
-                                this);
-        m_buttonBoard2->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                wxCommandEventHandler(BKECtrl::OnClickBoard02),
-                                nullptr,
-                                this);
-        m_buttonBoard3->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                wxCommandEventHandler(BKECtrl::OnClickBoard03),
-                                nullptr,
-                                this);
-        m_buttonBoard4->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                wxCommandEventHandler(BKECtrl::OnClickBoard04),
-                                nullptr,
-                                this);
-        m_buttonBoard5->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                wxCommandEventHandler(BKECtrl::OnClickBoard05),
-                                nullptr,
-                                this);
-        m_buttonBoard6->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                wxCommandEventHandler(BKECtrl::OnClickBoard06),
-                                nullptr,
-                                this);
-        m_buttonBoard7->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                wxCommandEventHandler(BKECtrl::OnClickBoard07),
-                                nullptr,
-                                this);
-        m_buttonBoard8->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                wxCommandEventHandler(BKECtrl::OnClickBoard08),
-                                nullptr,
-                                this);
+        m_boardButtons[0]->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                   wxCommandEventHandler(BKECtrl::OnClickBoard00),
+                                   nullptr,
+                                   this);
+        m_boardButtons[1]->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                   wxCommandEventHandler(BKECtrl::OnClickBoard01),
+                                   nullptr,
+                                   this);
+        m_boardButtons[2]->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                   wxCommandEventHandler(BKECtrl::OnClickBoard02),
+                                   nullptr,
+                                   this);
+        m_boardButtons[3]->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                   wxCommandEventHandler(BKECtrl::OnClickBoard03),
+                                   nullptr,
+                                   this);
+        m_boardButtons[4]->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                   wxCommandEventHandler(BKECtrl::OnClickBoard04),
+                                   nullptr,
+                                   this);
+        m_boardButtons[5]->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                   wxCommandEventHandler(BKECtrl::OnClickBoard05),
+                                   nullptr,
+                                   this);
+        m_boardButtons[6]->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                   wxCommandEventHandler(BKECtrl::OnClickBoard06),
+                                   nullptr,
+                                   this);
+        m_boardButtons[7]->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                   wxCommandEventHandler(BKECtrl::OnClickBoard07),
+                                   nullptr,
+                                   this);
+        m_boardButtons[8]->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                   wxCommandEventHandler(BKECtrl::OnClickBoard08),
+                                   nullptr,
+                                   this);
     }
     void BKECtrl::DisconnectEvents()
     {
@@ -672,41 +767,41 @@ namespace Frame
                                  wxCommandEventHandler(BKECtrl::OnClickGoToHome),
                                  nullptr,
                                  this);
-        m_buttonBoard0->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                   wxCommandEventHandler(BKECtrl::OnClickBoard00),
-                                   nullptr,
-                                   this);
-        m_buttonBoard1->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                   wxCommandEventHandler(BKECtrl::OnClickBoard01),
-                                   nullptr,
-                                   this);
-        m_buttonBoard2->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                   wxCommandEventHandler(BKECtrl::OnClickBoard02),
-                                   nullptr,
-                                   this);
-        m_buttonBoard3->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                   wxCommandEventHandler(BKECtrl::OnClickBoard03),
-                                   nullptr,
-                                   this);
-        m_buttonBoard4->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                   wxCommandEventHandler(BKECtrl::OnClickBoard04),
-                                   nullptr,
-                                   this);
-        m_buttonBoard5->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                   wxCommandEventHandler(BKECtrl::OnClickBoard05),
-                                   nullptr,
-                                   this);
-        m_buttonBoard6->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                   wxCommandEventHandler(BKECtrl::OnClickBoard06),
-                                   nullptr,
-                                   this);
-        m_buttonBoard7->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                   wxCommandEventHandler(BKECtrl::OnClickBoard07),
-                                   nullptr,
-                                   this);
-        m_buttonBoard8->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-                                   wxCommandEventHandler(BKECtrl::OnClickBoard08),
-                                   nullptr,
-                                   this);
+        m_boardButtons[0]->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                      wxCommandEventHandler(BKECtrl::OnClickBoard00),
+                                      nullptr,
+                                      this);
+        m_boardButtons[1]->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                      wxCommandEventHandler(BKECtrl::OnClickBoard01),
+                                      nullptr,
+                                      this);
+        m_boardButtons[2]->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                      wxCommandEventHandler(BKECtrl::OnClickBoard02),
+                                      nullptr,
+                                      this);
+        m_boardButtons[3]->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                      wxCommandEventHandler(BKECtrl::OnClickBoard03),
+                                      nullptr,
+                                      this);
+        m_boardButtons[4]->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                      wxCommandEventHandler(BKECtrl::OnClickBoard04),
+                                      nullptr,
+                                      this);
+        m_boardButtons[5]->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                      wxCommandEventHandler(BKECtrl::OnClickBoard05),
+                                      nullptr,
+                                      this);
+        m_boardButtons[6]->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                      wxCommandEventHandler(BKECtrl::OnClickBoard06),
+                                      nullptr,
+                                      this);
+        m_boardButtons[7]->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                      wxCommandEventHandler(BKECtrl::OnClickBoard07),
+                                      nullptr,
+                                      this);
+        m_boardButtons[8]->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+                                      wxCommandEventHandler(BKECtrl::OnClickBoard08),
+                                      nullptr,
+                                      this);
     }
 }// namespace Frame

@@ -16,6 +16,8 @@
 #include <typeinfo>
 #include <vector>
 
+#define VARIABLE(var) Utils::String::Printer(#var, var);
+
 namespace Utils
 {
     enum class Color_e : uint8_t
@@ -264,6 +266,22 @@ namespace Utils
             {
                 return "\x1B[" + std::to_string(static_cast<uint8_t>(color)) + "m" + el + "\033[0m";
             }
+        }
+        /**
+         * @brief Get name of variable and it's value as string.
+         *
+         * @tparam T
+         * @param var Name of variable.
+         * @param value Value of variable.
+         * @return Converted string.
+         */
+        template<typename T>
+        static std::string Printer(char* var, T value)
+        {
+            std::string name = std::string(var);
+            std::string number = ToString(value, 2);
+
+            return name + ": " + number;
         }
     };
 }// namespace Utils

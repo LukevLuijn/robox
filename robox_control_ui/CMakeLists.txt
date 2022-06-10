@@ -42,7 +42,8 @@ set(HEADERS_DRIVER
         include/driver/DataManager.h
         include/driver/RobotDriver.h
         include/driver/SerialDriver.h
-        include/driver/RobotController.h)
+        include/driver/RobotController.h
+        include/driver/BKEDriver.h)
 set(HEADERS_FRAME
         include/frame/MainFrame.h
         include/frame/FrameInterface.h
@@ -88,6 +89,7 @@ set(SOURCES
         src/RobotDrawPanel.cpp
         src/MainApplication.cpp
         src/BKECtrl.cpp
+        src/BKEDriver.cpp
         src/main.cpp)
 
 set(HEADERS

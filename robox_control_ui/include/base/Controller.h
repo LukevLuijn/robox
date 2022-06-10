@@ -14,6 +14,7 @@
 namespace Base
 {
     wxDEFINE_EVENT(UPDATE_EVENT, wxCommandEvent);
+    wxDEFINE_EVENT(BKE_EVENT, wxCommandEvent);
     wxDEFINE_EVENT(LOG_EVENT, wxCommandEvent);
 
     class Controller : public Frame::MainFrame
@@ -34,6 +35,12 @@ namespace Base
          * @param response Incoming response.
          */
         void ResponseCallback(const std::string& response);
+        /**
+         * @brief Callback for handeling incoming BKE messages.
+         *
+         * @param Incomming BKE message.
+         */
+        void BKECallback(const std::string& message);
 
     private:
         void OnCloseWindow(wxCloseEvent& event) override;
@@ -47,8 +54,11 @@ namespace Base
         void OnClickMenuRun(wxCommandEvent& event) override;
         void OnClickMenuStop(wxCommandEvent& event) override;
         void OnClickMenuEStop(wxCommandEvent& event) override;
+
         void OnUpdateEvent(wxCommandEvent& event);
+        void OnBKEEvent(wxCommandEvent& event);
         void OnLogEvent(wxCommandEvent& event);
+
 
     private:
         void SetNewControlFrame(Frame::FrameTypes_e type);

@@ -171,7 +171,7 @@ namespace Frame
             textCtrl->SetForegroundColour(wxColour(0, 0, 0));
             textCtrl->SetValue(Utils::String::ToString(value));
             slider->SetValue(static_cast<int32_t>(value * 100));
-            INFO("New position set");
+            INFO("New value set");
             return true;
         }
         ERROR("Could not translate input");

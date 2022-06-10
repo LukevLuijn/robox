@@ -9,6 +9,7 @@
 #define ROBOX_CONTROL_UI_BITMAP_H
 
 #include "wx/bitmap.h"
+#include "wx/graphics.h"
 #include "global_config.h"
 
 namespace Utils
@@ -43,6 +44,21 @@ namespace Utils
         static wxBitmap CreateBitmap(const std::string& filename, uint16_t width, uint16_t height, bool fromAssets = true)
         {
             return CreateBitmap(filename, wxSize(width, height), fromAssets);
+        }
+        /**
+         * @brief Convert bitmap to transparent image.
+         *
+         * @param bmp Bitmap to convert.
+         * @return Transparent bitmap.
+         */
+        static wxBitmap SetTransparent(const wxBitmap& bmp)
+        {
+            wxImage image = bmp.ConvertToImage();
+            unsigned char *alpha=image.GetAlpha();
+            memset(alpha, wxIMAGE_ALPHA_TRANSPARENT, image.GetWidth()*image.GetHeight());
+            wxGraphicsContext *gc=wxGraphicsContext::Create(image);
+            delete gc;
+            return wxBitmap(image);
         }
 
     };

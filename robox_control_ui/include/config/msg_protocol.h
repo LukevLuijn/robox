@@ -16,6 +16,7 @@ enum class MessageType_e : int8_t
     MOVE = 'M',
     STOP = 'E',
     DATA = 'D',
+    BKE = 'B',
     RESET = 'R',
     UNDEFINED = 0,
 };
@@ -50,6 +51,11 @@ enum class DataType_e : uint8_t
     SET_GRIP_OFFSET = 6,
     SET_IDLE_POSITIONS = 7,
     HOMING_COMPLETE = 8,
+};
+enum class BKEType_e : uint8_t
+{
+    BOARD_UPDATE = 0,
+    GAME_RESULT = 1,
 };
 enum class LogParts_e : uint8_t
 {
@@ -152,5 +158,30 @@ enum class DynamicData_e : uint8_t
     IDLE_POS_SEGMENT_01 = 16,
     IDLE_POS_SEGMENT_02 = 17,
     IDLE_POS_SEGMENT_03 = 18,
+};
+const uint8_t BKE_UPDATE_DATA_SIZE = 9;
+enum class BKEUpdate_e : uint8_t
+{
+    FIELD_0 = 0,
+    FIELD_1 = 1,
+    FIELD_2 = 2,
+    FIELD_3 = 3,
+    FIELD_4 = 4,
+    FIELD_5 = 5,
+    FIELD_6 = 6,
+    FIELD_7 = 7,
+    FIELD_8 = 8,
+};
+enum class BKEResult_e : uint8_t
+{
+    GAME_WON = 0,
+    GAME_LOST = 1,
+    GAME_DRAW = 2,
+};
+enum class BKEPiece_e : uint8_t
+{
+    NO_PIECE = 0,
+    X_PIECE = 1,
+    O_PIECE = 2,
 };
 #endif// ROBOX_USER_INTERFACE_MSG_PROTOCOL_H

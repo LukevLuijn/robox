@@ -8,6 +8,7 @@
 #include "Controller.h"
 #include "Logger.h"
 #include "RobotController.h"
+#include "BKEDriver.h"
 
 
 namespace Base
@@ -18,12 +19,17 @@ namespace Base
         {
             return std::bind(&Controller::ResponseCallback, &instance, std::placeholders::_1);
         }
+        std::function<void(const std::string&)> GetBKECallback(Controller& instance)
+        {
+            return std::bind(&Controller::BKECallback, &instance, std::placeholders::_1);
+        }
     }
     Controller::Controller() : Frame::MainFrame(nullptr), m_controlActive(false)
     {
         SetNewControlFrame(Frame::FrameTypes_e::MANUAL_CTRL);
         Bind(UPDATE_EVENT, &Controller::OnUpdateEvent, this);
         Bind(LOG_EVENT, &Controller::OnLogEvent, this);
+        Bind(BKE_EVENT, &Controller::OnBKEEvent, this);
     }
     void Controller::OnCloseWindow(wxCloseEvent& event)
     {
@@ -96,6 +102,7 @@ namespace Base
         {
             // TODO make dynamic
             Driver::RobotController::GetInstance().StartConnection("/dev/ttyACM0", 9600, GetResponseCallback(*this));
+            Driver::BKEDriver::GetInstance().StartBKEConnection("/dev/ttyACM1", 9600, GetBKECallback(*this));
 
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -113,7 +120,10 @@ namespace Base
         {
             Driver::RobotController::GetInstance().StopRobot();
             std::this_thread::sleep_for(std::chrono::microseconds(500));
+
             Driver::RobotController::GetInstance().StopConnection();
+            Driver::BKEDriver::GetInstance().StopBKEConnection();
+
             m_buttonMenuActivate->Disable();
             DeactivateControl();
 
@@ -169,6 +179,13 @@ namespace Base
         }
         event.Skip();
     }
+    void Controller::OnBKEEvent(wxCommandEvent& event)
+    {
+        auto type = static_cast<BKEType_e>(event.GetString()[1] - '0');
+        builder.UpdateControlPanel(type);
+        INFO("ON BKE EVENT");
+        event.Skip();
+    }
     void Controller::OnLogEvent(wxCommandEvent& event)
     {
         m_logPanel->WriteMessage();
@@ -179,6 +196,12 @@ namespace Base
     {
         wxCommandEvent event(UPDATE_EVENT);
         event.SetString(response);
+        wxPostEvent(this, event);
+    }
+    void Controller::BKECallback(const std::string& message)
+    {
+        wxCommandEvent event(BKE_EVENT);
+        event.SetString(message);
         wxPostEvent(this, event);
     }
     void Controller::SetNewControlFrame(Frame::FrameTypes_e type)

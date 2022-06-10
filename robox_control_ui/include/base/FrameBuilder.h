@@ -16,7 +16,7 @@ namespace Base
     class FrameBuilder
     {
     public:
-        FrameBuilder() = default;
+        FrameBuilder();
         virtual ~FrameBuilder() = default;
         /**
          * @brief Create and set current control frame.
@@ -38,6 +38,12 @@ namespace Base
          */
         void UpdateControlPanel(DataType_e responseType);
         /**
+         * @brief Trigger an update for the current BKE-control frame.
+         *
+         * @param bkeType BKE type that triggered the update.
+         */
+        void UpdateControlPanel(BKEType_e bkeType);
+        /**
          * @brief Trigger an reset for the current control frame.
          * 
          */
@@ -45,6 +51,7 @@ namespace Base
 
     private:
         Frame::IFrame* m_currentFrame{};
+        Frame::FrameTypes_e m_currentType;
     };
 }// namespace Base
 

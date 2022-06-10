@@ -6,11 +6,15 @@
 // ======================================
 
 #include "FrameBuilder.h"
-#include "ManualCtrl.h"
 #include "BKECtrl.h"
+#include "ManualCtrl.h"
+#include "Logger.h"
 
 namespace Base
 {
+    FrameBuilder::FrameBuilder() : m_currentType(Frame::FrameTypes_e::MANUAL_CTRL)
+    {
+    }
     void FrameBuilder::SetCurrentFrame(wxWindow* parent, Frame::FrameTypes_e type)
     {
         switch (type)
@@ -26,6 +30,7 @@ namespace Base
             case Frame::FrameTypes_e::ABOUT:        // TODO
                 break;
         }
+        m_currentType = type;
     }
     wxPanel* FrameBuilder::GetCurrentPanel()
     {
@@ -34,6 +39,21 @@ namespace Base
     void FrameBuilder::UpdateControlPanel(DataType_e responseType)
     {
         m_currentFrame->UpdateData(responseType);
+    }
+    void FrameBuilder::UpdateControlPanel(BKEType_e bkeType)
+    {
+        if (m_currentType == Frame::FrameTypes_e::BKE_CTRL)
+        {
+            auto pCurrentFrame = dynamic_cast<Frame::BKECtrl*>(m_currentFrame);
+            if (pCurrentFrame != nullptr)
+            {
+                pCurrentFrame->UpdateBKE(bkeType);
+            }
+            else
+            {
+                WARNING("could not perform dynamic cast");
+            }
+        }
     }
     void FrameBuilder::ResetControlPanel()
     {

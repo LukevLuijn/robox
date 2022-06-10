@@ -26,9 +26,14 @@ namespace Frame
         void UpdateData(DataType_e responseType) override;
         void ResetPanel() override;
 
+        void UpdateBKE(BKEType_e type);
+
     private:
         void UpdateFields();
         void SyncFields();
+
+        bool OnTextEnter(wxTextCtrl* textCtrl, wxSlider* slider, float& value, Fields_e field);
+        void OnSliderMove(wxTextCtrl* textCtrl, wxSlider* slider);
 
     private:
         virtual void OnKillFocusSpeed( wxFocusEvent& event );
@@ -59,7 +64,11 @@ namespace Frame
         void DisconnectEvents();
     private:
         std::array<std::pair<float,float>, 2> m_minMaxValues;
+        wxBitmap m_bitmapPieceO, m_bitmapPieceX,m_bitmapEmpty;
+
     private:
+        std::array<wxBitmapButton*, 9> m_boardButtons;
+
         wxPanel* m_speedPanel{};
         wxPanel* m_boardPanel{};
         wxPanel* m_panel39{};
@@ -83,16 +92,6 @@ namespace Frame
 
         wxButton* m_buttonResetBoard{};
         wxButton* m_buttonHome{};
-
-        wxBitmapButton* m_buttonBoard0{};
-        wxBitmapButton* m_buttonBoard1{};
-        wxBitmapButton* m_buttonBoard2{};
-        wxBitmapButton* m_buttonBoard3{};
-        wxBitmapButton* m_buttonBoard4{};
-        wxBitmapButton* m_buttonBoard5{};
-        wxBitmapButton* m_buttonBoard6{};
-        wxBitmapButton* m_buttonBoard7{};
-        wxBitmapButton* m_buttonBoard8{};
 
         wxStaticText* m_textSpeed{};
         wxStaticText* m_iconSpeed{};
