@@ -7,6 +7,7 @@
 
 #include "device/AxialActuator.h"
 #include "utils/Time.h"
+#include "utils/Logger.h"
 
 namespace Device
 {
