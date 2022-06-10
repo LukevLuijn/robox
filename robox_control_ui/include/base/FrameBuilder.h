@@ -16,7 +16,7 @@ namespace Base
     class FrameBuilder
     {
     public:
-        FrameBuilder();
+        FrameBuilder() = default;
         virtual ~FrameBuilder() = default;
         /**
          * @brief Create and set current control frame.

@@ -49,7 +49,8 @@ set(HEADERS_FRAME
         include/base/FrameBuilder.h
         include/frame/ManualCtrl.h
         include/widgets/DrawPanel.h
-        include/frame/RobotDrawPanel.h)
+        include/frame/RobotDrawPanel.h
+        include/frame/BKECtrl.h)
 set(HEADERS_LOGGER
         include/logger/Logger.h
         include/logger/LoggerInterface.h
@@ -86,6 +87,7 @@ set(SOURCES
         src/DrawPanel.cpp
         src/RobotDrawPanel.cpp
         src/MainApplication.cpp
+        src/BKECtrl.cpp
         src/main.cpp)
 
 set(HEADERS

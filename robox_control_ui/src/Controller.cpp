@@ -46,6 +46,7 @@ namespace Base
     void Controller::OnClickManual(wxCommandEvent& event)
     {
         SetNewControlFrame(Frame::FrameTypes_e::MANUAL_CTRL);
+        INFO("New control method set", "Manual control");
         event.Skip();
     }
     void Controller::OnClickKeyboard(wxCommandEvent& event)
@@ -56,8 +57,8 @@ namespace Base
     }
     void Controller::OnClickBKE(wxCommandEvent& event)
     {
-        // TODO
-        WARNING("Work in progress");
+        SetNewControlFrame(Frame::FrameTypes_e::BKE_CTRL);
+        INFO("New control method set", "BKE control");
         event.Skip();
     }
     void Controller::OnClickSettings(wxCommandEvent& event)

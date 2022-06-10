@@ -7,12 +7,10 @@
 
 #include "FrameBuilder.h"
 #include "ManualCtrl.h"
+#include "BKECtrl.h"
 
 namespace Base
 {
-    FrameBuilder::FrameBuilder()
-    {
-    }
     void FrameBuilder::SetCurrentFrame(wxWindow* parent, Frame::FrameTypes_e type)
     {
         switch (type)
@@ -20,8 +18,10 @@ namespace Base
             case Frame::FrameTypes_e::MANUAL_CTRL:
                 m_currentFrame = new Frame::ManualCtrl(parent);
                 break;
+            case Frame::FrameTypes_e::BKE_CTRL:
+                m_currentFrame = new Frame::BKECtrl(parent);
+                break;
             case Frame::FrameTypes_e::KEYBOARD_CTRL:// TODO
-            case Frame::FrameTypes_e::BKE_CTRL:     // TODO
             case Frame::FrameTypes_e::SETTINGS:     // TODO
             case Frame::FrameTypes_e::ABOUT:        // TODO
                 break;
