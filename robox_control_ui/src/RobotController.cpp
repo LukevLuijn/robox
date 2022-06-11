@@ -55,6 +55,10 @@ namespace Driver
             m_driver.EmergencyStop();
         }
     }
+    void RobotController::PauseRobot(uint32_t time)
+    {
+        m_driver.PauseRobot(time);
+    }
     void RobotController::SetNewSpeed(float value)
     {
         m_newConfig[static_cast<size_t>(Config_e::SPEED)] = value;// / 100;

@@ -11,12 +11,13 @@
 #include "Bitmap.h"
 #include "RobotController.h"
 
+
 namespace Frame
 {
     BKECtrl::BKECtrl(wxWindow* parent)
         : IFrame(parent), m_bitmapPieceO(Utils::Bitmap::CreateBitmap("piece_o.png", wxSize(80, 80))),
           m_bitmapPieceX(Utils::Bitmap::CreateBitmap("piece_x.png", wxSize(80, 80))),
-          m_bitmapEmpty(Utils::Bitmap::SetTransparent(m_bitmapPieceX))
+          m_bitmapEmpty(Utils::Bitmap::SetTransparent(m_bitmapPieceX)),m_storage({5,5})
     {
         InitializeFrame();
         ConnectEvents();
@@ -37,7 +38,6 @@ namespace Frame
                 INFO("Homing sequence complete");
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
                 SyncFields();
-                //                Enable();
                 break;
             case DataType_e::GET_STATIC:
                 UpdateFields();
@@ -65,28 +65,36 @@ namespace Frame
         {
             case BKEType_e::BOARD_UPDATE:
             {
+                int64_t piecesX = std::count_if(Driver::BKEDriver::m_board.begin(),
+                                                Driver::BKEDriver::m_board.end(),
+                                                [](uint16_t piece) {
+                                                    return piece == (uint16_t)BKEPiece_e::X_PIECE;
+                                                });
+                m_storage[(size_t)StorageType_e::STORAGE_X] = static_cast<uint8_t>(5 - piecesX);
+                int64_t piecesO = std::count_if(Driver::BKEDriver::m_board.begin(),
+                                                Driver::BKEDriver::m_board.end(),
+                                                [](uint16_t piece) {
+                                                  return piece == (uint16_t)BKEPiece_e::O_PIECE;
+                                                });
+                m_storage[(size_t)StorageType_e::STORAGE_O] = static_cast<uint8_t>(5 - piecesO);
+
                 for (std::size_t i = 0; i < Driver::BKEDriver::m_board.size(); ++i)
                 {
                     switch (static_cast<BKEPiece_e>(Driver::BKEDriver::m_board[i]))
                     {
                         case BKEPiece_e::NO_PIECE:
                         {
-//                            m_boardButtons[i]->SetBackgroundColour(GetBackgroundColour());
                             m_boardButtons[i]->SetBitmap(m_bitmapEmpty);
                         }
                         break;
                         case BKEPiece_e::O_PIECE:
                         {
-//                            m_boardButtons[i]->SetBackgroundColour(wxColor(121,198,226));
-
                             m_boardButtons[i]->SetBitmap(m_bitmapPieceO);
                         }
                         break;
                         case BKEPiece_e::X_PIECE:
                         {
-//                            m_boardButtons[i]->SetBackgroundColour(wxColor(150,150,150));
                             m_boardButtons[i]->SetBitmap(m_bitmapPieceX);
-
                         }
                         break;
                     }
@@ -97,7 +105,6 @@ namespace Frame
             break;
             case BKEType_e::GAME_RESULT:
             {
-
             }
             break;
         }
@@ -149,6 +156,161 @@ namespace Frame
     {
         auto value = static_cast<float>(slider->GetValue()) / 100;
         textCtrl->SetValue(Utils::String::ToString(value, 2));
+    }
+    void BKECtrl::PlacePiece(uint8_t index, StorageType_e type, bool home)
+    {
+        BKELocation storageLocation{};
+        if (!GetStorageLocation(type, StorageInteraction_e::RETRIEVE, storageLocation))
+        {
+            ERROR("Placement of piece not possible, no pieces left.");
+            return;
+        }
+
+        MoveToLocation(storageLocation, false);
+        MoveToLocation(storageLocation, true);
+
+        TriggerGripper(255);
+
+        MoveToLocation(storageLocation, false);
+        MoveToLocation(m_locations[BOARD_START + index], false);
+        MoveToLocation(m_locations[BOARD_START + index], true, true);
+
+        TriggerGripper(0);
+
+        MoveToLocation(m_locations[BOARD_START + index], false);
+
+        if (home)
+        {
+            MoveToActiveHome();
+        }
+    }
+    void BKECtrl::RemovePiece(uint8_t index, StorageType_e type, bool home)
+    {
+        BKELocation storageLocation{};
+        if (!GetStorageLocation(type, StorageInteraction_e::STORE, storageLocation))
+        {
+            ERROR("Removal of piece not possible, storage is full.");
+            return;
+        }
+        MoveToLocation(m_locations[BOARD_START + index], false);
+        MoveToLocation(m_locations[BOARD_START + index], true);
+
+        TriggerGripper(255);
+
+        MoveToLocation(m_locations[BOARD_START + index], false);
+        MoveToLocation(storageLocation, false);
+        MoveToLocation(storageLocation, true, true);
+
+        TriggerGripper(0);
+
+        MoveToLocation(storageLocation, false);
+
+        if (home)
+        {
+            MoveToActiveHome();
+        }
+    }
+    bool BKECtrl::GetStorageLocation(StorageType_e type, StorageInteraction_e interaction, BKELocation& location)
+    {
+        if (interaction == StorageInteraction_e::RETRIEVE)
+        {
+            int64_t index = m_storage[(size_t)type];
+
+            if (index == 0)
+            {
+                ERROR("Storage is empty for this type.");
+                return false;
+            }
+
+            int64_t storageIndex = (type == StorageType_e::STORAGE_O) ? STORAGE_O_START + (index-1) : STORAGE_X_START + (index-1);
+            location = m_locations[static_cast<uint64_t>(storageIndex)];
+            --m_storage[(size_t)type];
+            return true;
+        }
+        else // StorageInteraction_e::STORE
+        {
+            int64_t index = m_storage[(size_t)type];
+
+            if (index >= 5)
+            {
+                ERROR("Storage is full for this type.");
+                return false;
+            }
+            int64_t storageIndex = (type == StorageType_e::STORAGE_O) ? STORAGE_O_START + (index) : STORAGE_X_START + (index);
+            location = m_locations[static_cast<uint64_t>(storageIndex)];
+            ++m_storage[(size_t)type];
+            return true;
+        }
+    }
+    void BKECtrl::BoardInteraction(uint8_t index, bool home)
+    {
+        if (Driver::BKEDriver::m_board[index] == (uint8_t) BKEPiece_e::NO_PIECE)
+        {
+            PlacePiece(index, StorageType_e::STORAGE_O, home);
+            INFO("Placing O-Piece", index);
+        }
+        else
+        {
+            if (Driver::BKEDriver::m_board[index] == (uint8_t) BKEPiece_e::O_PIECE)
+            {
+                RemovePiece(index, StorageType_e::STORAGE_O, home);
+                INFO("Removing O-Piece", index);
+            }
+            else// BKEPiece_e::X_PIECE
+            {
+                RemovePiece(index, StorageType_e::STORAGE_X, home);
+                INFO("Removing X-Piece", index);
+            }
+        }
+    }
+    void BKECtrl::MoveToActiveHome()
+    {
+        float A0 = Driver::RobotDriver::m_dataManager.m_segment00.m_idlePosition / 2;
+        float A1 = Driver::RobotDriver::m_dataManager.m_segment01.m_idlePosition;
+        float A2 = Driver::RobotDriver::m_dataManager.m_segment02.m_idlePosition;
+        float A3 = Driver::RobotDriver::m_dataManager.m_segment03.m_idlePosition;
+        Move(A0, A1, A2, A3);
+    }
+    void BKECtrl::MoveToLocation(const BKELocation& location, bool isTrigger, bool isDrop)
+    {
+        float A0 = (isTrigger) ? location.h : location.h + 50.f;
+        A0 += (isDrop) ? 5 : 0;
+        float A1 = location.a1;
+        float A2 = location.a2;
+
+        // https://howtomechatronics.com/projects/scara-robot-how-to-build-your-own-arduino-based-robot/
+
+        float A3 = (90 + A1 + A2) * -1;
+        //        A3 = (-1) * A3;
+
+        float xPos = Driver::RobotDriver::m_dataManager.m_gripperPosition[0];
+        float yPos = Driver::RobotDriver::m_dataManager.m_gripperPosition[1];
+
+        if ((xPos < 0) && (yPos < 0))
+        {
+            A3 = 270 - A1 - A2;
+        }
+        if (abs(A3) > 165)
+        {
+            A3 = 180 + A3;
+        }
+        A3 += 90;
+
+        Move(A0, A1, A2, A3);
+    }
+    void BKECtrl::TriggerGripper(uint8_t value)
+    {
+        Driver::RobotController::GetInstance().SetGripperValue01(value);
+        Driver::RobotController::GetInstance().SetGripperValue02(value);
+        Driver::RobotController::GetInstance().RunRobot();
+    }
+    void BKECtrl::Move(float A0, float A1, float A2, float A3)
+    {
+        Driver::RobotController::GetInstance().SetNewPositionA0(A0);
+        Driver::RobotController::GetInstance().SetNewPositionA1(A1);
+        Driver::RobotController::GetInstance().SetNewPositionA2(A2);
+        Driver::RobotController::GetInstance().SetNewPositionA3(A3);
+        Driver::RobotController::GetInstance().RunRobot();
     }
     void BKECtrl::UpdateFields()
     {
@@ -232,66 +394,65 @@ namespace Frame
     }
     void BKECtrl::OnClickResetBoard(wxCommandEvent& event)
     {
-        INFO("Reset board TODO");
+        INFO("Clearing the board");
+        for(size_t i =0; i < Driver::BKEDriver::m_board.size(); ++i)
+        {
+            if (Driver::BKEDriver::m_board[i] != (uint8_t)BKEPiece_e::NO_PIECE)
+            {
+                BoardInteraction(static_cast<uint8_t>(i), false);
+            }
+        }
+        MoveToActiveHome();
         event.Skip();
     }
     void BKECtrl::OnClickGoToHome(wxCommandEvent& event)
     {
-        Driver::RobotController::GetInstance().SetNewPositionA0(
-                Driver::RobotDriver::m_dataManager.m_segment00.m_idlePosition / 2);
-        Driver::RobotController::GetInstance().SetNewPositionA1(
-                Driver::RobotDriver::m_dataManager.m_segment01.m_idlePosition);
-        Driver::RobotController::GetInstance().SetNewPositionA2(
-                Driver::RobotDriver::m_dataManager.m_segment02.m_idlePosition);
-        Driver::RobotController::GetInstance().SetNewPositionA3(
-                Driver::RobotDriver::m_dataManager.m_segment03.m_idlePosition);
-        Driver::RobotController::GetInstance().RunRobot();
-
+        MoveToActiveHome();
         event.Skip();
     }
     void BKECtrl::OnClickBoard00(wxCommandEvent& event)
     {
-        INFO("FROM BKE");
+        BoardInteraction(0);
         event.Skip();
     }
     void BKECtrl::OnClickBoard01(wxCommandEvent& event)
     {
-        INFO("FROM BKE");
+        BoardInteraction(1);
         event.Skip();
     }
     void BKECtrl::OnClickBoard02(wxCommandEvent& event)
     {
-        INFO("FROM BKE");
+        BoardInteraction(2);
         event.Skip();
     }
     void BKECtrl::OnClickBoard03(wxCommandEvent& event)
     {
-        INFO("FROM BKE");
+        BoardInteraction(3);
         event.Skip();
     }
     void BKECtrl::OnClickBoard04(wxCommandEvent& event)
     {
-        INFO("FROM BKE");
+        BoardInteraction(4);
         event.Skip();
     }
     void BKECtrl::OnClickBoard05(wxCommandEvent& event)
     {
-        INFO("FROM BKE");
+        BoardInteraction(5);
         event.Skip();
     }
     void BKECtrl::OnClickBoard06(wxCommandEvent& event)
     {
-        INFO("FROM BKE");
+        BoardInteraction(6);
         event.Skip();
     }
     void BKECtrl::OnClickBoard07(wxCommandEvent& event)
     {
-        INFO("FROM BKE");
+        BoardInteraction(7);
         event.Skip();
     }
     void BKECtrl::OnClickBoard08(wxCommandEvent& event)
     {
-        INFO("FROM BKE");
+        BoardInteraction(8);
         event.Skip();
     }
     void BKECtrl::InitializeFrame()

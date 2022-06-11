@@ -76,6 +76,12 @@ namespace Driver
          */
         void EStopRobot();
         /**
+         * @brief Pause the robot.
+         *
+         * @param time Pause time in milliseconds.
+         */
+        void PauseRobot(uint32_t time);
+        /**
          * @brief Set new speed value for the device.
          * 
          * @param value The new speed value. 

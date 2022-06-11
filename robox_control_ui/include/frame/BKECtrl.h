@@ -5,17 +5,25 @@
 #ifndef ROBOX_CONTROL_UI_BKECTRL_H
 #define ROBOX_CONTROL_UI_BKECTRL_H
 
+#include "wx/bmpbuttn.h"
+#include "wx/button.h"
+#include "wx/slider.h"
 #include "wx/statline.h"
 #include "wx/stattext.h"
-#include "wx/button.h"
-#include "wx/bmpbuttn.h"
 #include "wx/textctrl.h"
-#include "wx/slider.h"
 
 #include "FrameInterface.h"
+#include "bke_locations.h"
 
 namespace Frame
 {
+    struct BKELocation {
+        float a1, a2, h;
+    };
+
+    enum class StorageType_e : uint8_t;
+    enum class StorageInteraction_e : uint8_t;
+
     class BKECtrl : public IFrame
     {
     public:
@@ -35,36 +43,57 @@ namespace Frame
         bool OnTextEnter(wxTextCtrl* textCtrl, wxSlider* slider, float& value, Fields_e field);
         void OnSliderMove(wxTextCtrl* textCtrl, wxSlider* slider);
 
+        void PlacePiece(uint8_t index, StorageType_e type, bool home = true);
+        void RemovePiece(uint8_t index, StorageType_e type, bool home = true);
+        bool GetStorageLocation(StorageType_e type, StorageInteraction_e interaction, BKELocation& location);
+        void BoardInteraction(uint8_t index, bool home = true);
+
+        static void MoveToLocation(const BKELocation& location, bool isTrigger, bool isDrop = false);
+        static void MoveToActiveHome();
+        static void TriggerGripper(uint8_t value);
+        static void Move(float A0, float A1, float A2, float A3);
     private:
-        virtual void OnKillFocusSpeed( wxFocusEvent& event );
-        virtual void OnTextEnterSpeed( wxCommandEvent& event );
-        virtual void OnTextMaxLenSpeed( wxCommandEvent& event );
-        virtual void OnSliderReleaseSpeed( wxScrollEvent& event );
-        virtual void OnSliderSpeed( wxCommandEvent& event );
-        virtual void OnKillFocusAccel( wxFocusEvent& event );
-        virtual void OnTextEnterAccel( wxCommandEvent& event );
-        virtual void OnTextMaxLenAccel( wxCommandEvent& event );
-        virtual void OnSliderReleaseAccel( wxScrollEvent& event );
-        virtual void OnSliderAccel( wxCommandEvent& event );
-        virtual void OnClickResetBoard( wxCommandEvent& event );
-        virtual void OnClickGoToHome( wxCommandEvent& event );
-        virtual void OnClickBoard00( wxCommandEvent& event );
-        virtual void OnClickBoard01( wxCommandEvent& event );
-        virtual void OnClickBoard02( wxCommandEvent& event );
-        virtual void OnClickBoard03( wxCommandEvent& event );
-        virtual void OnClickBoard04( wxCommandEvent& event );
-        virtual void OnClickBoard05( wxCommandEvent& event );
-        virtual void OnClickBoard06( wxCommandEvent& event );
-        virtual void OnClickBoard07( wxCommandEvent& event );
-        virtual void OnClickBoard08( wxCommandEvent& event );
+        virtual void OnKillFocusSpeed(wxFocusEvent& event);
+        virtual void OnTextEnterSpeed(wxCommandEvent& event);
+        virtual void OnTextMaxLenSpeed(wxCommandEvent& event);
+        virtual void OnSliderReleaseSpeed(wxScrollEvent& event);
+        virtual void OnSliderSpeed(wxCommandEvent& event);
+        virtual void OnKillFocusAccel(wxFocusEvent& event);
+        virtual void OnTextEnterAccel(wxCommandEvent& event);
+        virtual void OnTextMaxLenAccel(wxCommandEvent& event);
+        virtual void OnSliderReleaseAccel(wxScrollEvent& event);
+        virtual void OnSliderAccel(wxCommandEvent& event);
+        virtual void OnClickResetBoard(wxCommandEvent& event);
+        virtual void OnClickGoToHome(wxCommandEvent& event);
+        virtual void OnClickBoard00(wxCommandEvent& event);
+        virtual void OnClickBoard01(wxCommandEvent& event);
+        virtual void OnClickBoard02(wxCommandEvent& event);
+        virtual void OnClickBoard03(wxCommandEvent& event);
+        virtual void OnClickBoard04(wxCommandEvent& event);
+        virtual void OnClickBoard05(wxCommandEvent& event);
+        virtual void OnClickBoard06(wxCommandEvent& event);
+        virtual void OnClickBoard07(wxCommandEvent& event);
+        virtual void OnClickBoard08(wxCommandEvent& event);
 
     private:
         void InitializeFrame();
         void ConnectEvents();
         void DisconnectEvents();
+
     private:
-        std::array<std::pair<float,float>, 2> m_minMaxValues;
-        wxBitmap m_bitmapPieceO, m_bitmapPieceX,m_bitmapEmpty;
+        std::array<std::pair<float, float>, 2> m_minMaxValues;
+        wxBitmap m_bitmapPieceO, m_bitmapPieceX, m_bitmapEmpty;
+        std::array<uint8_t, 2> m_storage;
+
+        std::array<BKELocation, N_TOTAL_LOCATIONS> m_locations{
+                BKELocation{BOARD_LOC_00}, BKELocation{BOARD_LOC_01}, BKELocation{BOARD_LOC_02},
+                BKELocation{BOARD_LOC_03}, BKELocation{BOARD_LOC_04}, BKELocation{BOARD_LOC_05},
+                BKELocation{BOARD_LOC_06}, BKELocation{BOARD_LOC_07}, BKELocation{BOARD_LOC_08},
+                BKELocation{STORAGE_X_00}, BKELocation{STORAGE_X_01}, BKELocation{STORAGE_X_02},
+                BKELocation{STORAGE_X_03}, BKELocation{STORAGE_X_04}, BKELocation{STORAGE_O_00},
+                BKELocation{STORAGE_O_01}, BKELocation{STORAGE_O_02}, BKELocation{STORAGE_O_03},
+                BKELocation{STORAGE_O_04},
+        };
 
     private:
         std::array<wxBitmapButton*, 9> m_boardButtons;
@@ -120,6 +149,17 @@ namespace Frame
         wxStaticText* m_textDrawPercentage{};
         wxStaticText* m_iconDraw1{};
     };
-}
+
+    enum class StorageType_e : uint8_t
+    {
+        STORAGE_X = 0,
+        STORAGE_O = 1,
+    };
+    enum class StorageInteraction_e : uint8_t
+    {
+        RETRIEVE = 0,
+        STORE = 1,
+    };
+}// namespace Frame
 
 #endif//ROBOX_CONTROL_UI_BKECTRL_H

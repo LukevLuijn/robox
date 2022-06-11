@@ -37,7 +37,8 @@ set(HEADERS_BASE
         include/base/MainApplication.h)
 set(HEADERS_CONFIG
         include/config/global_config.h
-        include/config/msg_protocol.h)
+        include/config/msg_protocol.h
+        include/config/bke_locations.h)
 set(HEADERS_DRIVER
         include/driver/DataManager.h
         include/driver/RobotDriver.h

@@ -35,6 +35,10 @@ namespace Base
         A3.Start();
         DEBUG("Setup complete", "Linear actuator A0");
 
+        pinMode(GRIPPER_SIGNAL_00, OUTPUT);
+        pinMode(GRIPPER_SIGNAL_01, OUTPUT);
+        DEBUG("Setup complete", "Gripper");
+
         DEBUG("Setup complete", "Robot");
     }
     void Robot::Run()
@@ -72,6 +76,9 @@ namespace Base
         A1.disableOutputs();
         A2.disableOutputs();
         A3.disableOutputs();
+
+        SetGripperPWMSignal00(0);
+        SetGripperPWMSignal01(0);
 
         INFO("Robot disabled");
     }
