@@ -352,19 +352,19 @@ namespace Frame
         if (Driver::BKEDriver::m_board[index] == (uint8_t) BKEPiece_e::NO_PIECE)
         {
             PlacePiece(index, StorageType_e::STORAGE_O, home);
-            INFO("Placing O-Piece", index);
+            INFO("Placing O-Piece", (uint16_t)index);
         }
         else
         {
             if (Driver::BKEDriver::m_board[index] == (uint8_t) BKEPiece_e::O_PIECE)
             {
                 RemovePiece(index, StorageType_e::STORAGE_O, home);
-                INFO("Removing O-Piece", index);
+                INFO("Removing O-Piece", (uint16_t)index);
             }
             else// BKEPiece_e::X_PIECE
             {
                 RemovePiece(index, StorageType_e::STORAGE_X, home);
-                INFO("Removing X-Piece", index);
+                INFO("Removing X-Piece", (uint16_t)index);
             }
         }
     }

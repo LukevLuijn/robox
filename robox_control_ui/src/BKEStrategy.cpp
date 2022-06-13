@@ -52,10 +52,8 @@ namespace Utils
         switch (pieceCount)
         {
             case 1:
-                WARNING("Move 1");
                 return CheckMove01(target);
             case 2:
-                WARNING("Move 2");
                 return CheckMove02(target);
             default:
                 return -1;
@@ -74,21 +72,15 @@ namespace Utils
     {
         if (CheckCorners(target))
         {
-            WARNING("Corner so center");
-
             return m_center;
         }
         else if (CheckCenter(target))
         {
-            WARNING("Center so corner");
-
             uint8_t index = GetRandom(0, 4);
             return m_corners[index];
         }
         else if (CheckEdges(target))
         {
-            WARNING("Potential win");
-
             m_potentialWin = true;
             return m_center;
         }
@@ -100,9 +92,6 @@ namespace Utils
         {
             return -1;// no viable move found.
         }
-
-        WARNING("Potential win 2");
-
         bool patternVertical = (Driver::BKEDriver::m_board[1] == (uint16_t) target) &&
                                (Driver::BKEDriver::m_board[7] == (uint16_t) target);
         bool patternHorizontal = (Driver::BKEDriver::m_board[3] == (uint16_t) target) &&
@@ -110,15 +99,9 @@ namespace Utils
 
         if (patternVertical || patternHorizontal)
         {
-            WARNING("Potential win 3");
-
-
             uint8_t index = GetRandom(0, 4);
             return m_corners[index];
         }
-
-        WARNING("Potential win fail");
-
         return -1; // no viable move found.
     }
     bool BKEStrategy::CheckCorners(BKEPiece_e target)

@@ -64,7 +64,6 @@ set(HEADERS_UTILS
         include/utils/String.h
         include/utils/Point.h
         include/utils/Kinematics.h
-        include/utils/UpdateTimer.h
         include/utils/BKEStrategy.h)
 set(HEADERS_WIDGETS
         include/widgets/ConcreteMessagePanels.h
@@ -93,7 +92,6 @@ set(SOURCES
         src/MainApplication.cpp
         src/BKECtrl.cpp
         src/BKEDriver.cpp
-        src/UpdateTimer.cpp
         src/BKEStrategy.cpp
         src/main.cpp)
 

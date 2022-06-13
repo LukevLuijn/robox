@@ -12,12 +12,12 @@
 #include "wx/statline.h"
 #include "wx/stattext.h"
 #include "wx/textctrl.h"
+#include "wx/timer.h"
 
 #include <chrono>
 #include <map>
 
 #include "FrameInterface.h"
-#include "UpdateTimer.h"
 #include "bke_locations.h"
 
 wxDEFINE_EVENT(GAME_COMPLETE, wxCommandEvent);
