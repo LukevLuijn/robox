@@ -27,6 +27,11 @@ namespace Frame
     struct BKELocation {
         float a1, a2, h;
     };
+    enum class BKETurn_e : uint8_t
+    {
+        USER = 0,
+        ROBOX = 1,
+    };
     enum class StorageType_e : uint8_t
     {
         STORAGE_X = 0,
@@ -70,7 +75,7 @@ namespace Frame
         void BoardInteraction(uint8_t index, bool home = true);
         void ClearBoard();
         void UpdateStatistics(BKEResult_e result);
-
+        void ToggleTurn(BKETurn_e turn);
 
         static void MoveToActiveHome();
         static void MoveToLocation(const BKELocation& location, bool isTrigger, bool isDrop = false);
@@ -121,6 +126,9 @@ namespace Frame
         bool m_gameActive;
         std::chrono::time_point<std::chrono::steady_clock> m_gameStart;
         BKEStrategy_e m_strategy;
+        BKETurn_e m_currentTurn;
+
+
 
 
         const std::array<BKELocation, N_TOTAL_LOCATIONS> m_locations{

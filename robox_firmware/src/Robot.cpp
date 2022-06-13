@@ -67,7 +67,8 @@ namespace Base
             String targetA2 = "2:" + String(target.A2);
             String targetA3 = "3:" + String(target.A3);
             String varString = targetZ0 + "," + targetA1 + "," + targetA2 + "," + targetA3;
-            INFO("New target set", varString);
+
+            DEBUG("New target set", varString);
         }
     }
     void Robot::DisableRobot()

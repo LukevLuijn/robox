@@ -80,15 +80,6 @@ namespace Driver
                 case BKEType_e::BOARD_RESULT:
                 case BKEType_e::BOARD_UPDATE:
                 {
-                    if (static_cast<BKEType_e>(message[1] - '0') == BKEType_e::BOARD_RESULT)
-                    {
-                        INFO("BOARD RESULT", message);
-                    }
-                    else // BKEType_e::BOARD_UPDATE
-                    {
-                        INFO("BOARD UPDATE", message);
-                    }
-
                     std::string params = message.substr(2);                                 // remove message header
                     Utils::String::Remove(params, std::vector<char>{'[', ']'});             // remove encasement
                     std::vector<std::string> paramList = Utils::String::Divide(params, ',');// separate values by ','
@@ -132,8 +123,6 @@ namespace Driver
                 break;
                 case BKEType_e::GAME_RESULT:
                 {
-                    INFO("GAME RESULT", message);
-
                     std::string params = message.substr(2);                                 // remove message header
                     Utils::String::Remove(params, std::vector<char>{'[', ']'});             // remove encasement
                     std::vector<std::string> paramList = Utils::String::Divide(params, ',');// separate values by ','

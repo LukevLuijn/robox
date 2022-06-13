@@ -15,6 +15,8 @@
 #include "MainApplication.h"
 #include "RobotController.h"
 
+#include "BKEStrategy.h"
+
 namespace
 {
     enum class Statistics_e : uint8_t
@@ -40,11 +42,8 @@ namespace Frame
         : IFrame(parent), m_bitmapPieceO(Utils::Bitmap::CreateBitmap("piece_o.png", wxSize(80, 80))),
           m_bitmapPieceX(Utils::Bitmap::CreateBitmap("piece_x.png", wxSize(80, 80))),
           m_bitmapEmpty(Utils::Bitmap::SetTransparent(m_bitmapPieceX)), m_storage({5, 5}), m_gameActive(false),
-          m_gameStart(std::chrono::steady_clock::now()), m_strategy(BKEStrategy_e::EASY)
+          m_gameStart(std::chrono::steady_clock::now()), m_strategy(BKEStrategy_e::EASY), m_currentTurn(BKETurn_e::USER)
     {
-        std::cout << "constructor BKE" << std::endl;
-
-
         InitializeFrame();
         ConnectEvents();
         this->Connect(wxEVT_TIMER, wxTimerEventHandler(BKECtrl::OnUpdateEvent), nullptr, this);
@@ -52,11 +51,11 @@ namespace Frame
         m_timer = new wxTimer;
         m_timer->SetOwner(this);
         m_timer->Start(1000);
+
+        ToggleTurn(BKETurn_e::USER);
     }
     BKECtrl::~BKECtrl()
     {
-        std::cout << "destructor BKE" << std::endl;
-
         DisconnectEvents();
         this->Disconnect(wxEVT_TIMER, wxTimerEventHandler(BKECtrl::OnUpdateEvent), nullptr, this);
     }
@@ -122,6 +121,8 @@ namespace Frame
                         {
                             case BKEPiece_e::X_PIECE:
                             {
+                                ToggleTurn(BKETurn_e::ROBOX);
+
                                 if (!m_gameActive)
                                 {
                                     auto window = dynamic_cast<Base::Controller*>(Base::TheApp().GetTopWindow());
@@ -138,13 +139,14 @@ namespace Frame
                                 uint8_t pieceIndex = 0;
                                 if (PlayPiece(m_strategy, pieceIndex))
                                 {
-                                    WARNING("Board interaction", pieceIndex);
                                     BoardInteraction(pieceIndex);
                                 }
                             }
                             break;
-                            case BKEPiece_e::NO_PIECE:
                             case BKEPiece_e::O_PIECE:
+                                ToggleTurn(BKETurn_e::USER);
+                                break;
+                            case BKEPiece_e::NO_PIECE:
                                 break;
                         }
                     }
@@ -172,7 +174,7 @@ namespace Frame
             case BKEType_e::GAME_RESULT:
             {
                 const std::array<std::string, 3> results = {"Game won", "Game lost", "Game draw"};
-                INFO("GAME COMPLETE", results[(size_t) Driver::BKEDriver::m_result]);
+                INFO("Game completed.", results[(size_t)Driver::BKEDriver::m_result]);
                 Driver::RobotController::GetInstance().PauseRobot(1000);
 
                 auto WaitAndClear = [&]() {
@@ -385,6 +387,37 @@ namespace Frame
             }
         }
     }
+    void BKECtrl::ToggleTurn(BKETurn_e turn)
+    {
+        auto toggleTurn = [](wxStaticText* turn, wxStaticText* notTurn) {
+            turn->SetBackgroundColour(wxColor(0, 255, 0));
+            notTurn->SetBackgroundColour(wxColor(80, 80, 80));
+
+            turn->SetForegroundColour(wxColor(0, 0, 0));
+            notTurn->SetForegroundColour(wxColor(255, 255, 255));
+        };
+
+        switch (turn)
+        {
+            case BKETurn_e::ROBOX:
+            {
+                m_textTurnROBOX->SetLabel("ROBOX <-");
+                m_textTurnUser->SetLabel("USER");
+                toggleTurn(m_textTurnROBOX, m_textTurnUser);
+            }
+            break;
+            case BKETurn_e::USER:
+            {
+                m_textTurnROBOX->SetLabel("ROBOX");
+                m_textTurnUser->SetLabel("-> USER");
+                toggleTurn(m_textTurnUser, m_textTurnROBOX);
+            }
+            break;
+        }
+
+        Layout();
+        Refresh();
+    }
     void BKECtrl::UpdateStatistics(BKEResult_e result)
     {
         ++statistics[Statistics_e::GAMES_PLAYED];
@@ -421,7 +454,7 @@ namespace Frame
     {
         float A0 = Driver::RobotDriver::m_dataManager.m_segment00.m_idlePosition / 2;
         float A1 = Driver::RobotDriver::m_dataManager.m_segment01.m_idlePosition;
-        float A2 = Driver::RobotDriver::m_dataManager.m_segment02.m_idlePosition -360;
+        float A2 = Driver::RobotDriver::m_dataManager.m_segment02.m_idlePosition - 360;
         float A3 = Driver::RobotDriver::m_dataManager.m_segment03.m_idlePosition;
         Move(A0, A1, A2, A3);
     }
@@ -476,51 +509,36 @@ namespace Frame
         {
             case BKEStrategy_e::FAIR:
             {
-                typedef std::array<size_t, 3> Line;
-                std::array<Line, 8> lines = {
-                        Line{0,1,2},
-                        Line{3,4,5},
-                        Line{6,7,8},
-                        Line{0,3,6},
-                        Line{1,4,7},
-                        Line{2,5,8},
-                        Line{0,4,8},
-                        Line{6,4,2},
-                };
-
-                auto checkLines = [&lines](uint16_t target, uint16_t source) -> int64_t
+                int16_t result = Utils::BKEStrategy::CheckBoardLines(BKEPiece_e::O_PIECE,BKEPiece_e::X_PIECE);
+                if (result != -1)
                 {
-                    for(const Line& line : lines)
-                    {
-                        auto amount = std::count_if(line.begin(), line.end(), [&target](uint16_t piece){ return Driver::BKEDriver::m_board[piece] == target;});
-                        if (amount >= 2) // almost won
-                        {
-                            auto it = std::find_if(line.begin(), line.end(), [&target](uint16_t piece){ return Driver::BKEDriver::m_board[piece] != target;});
-                            if (it != line.end() && Driver::BKEDriver::m_board[(*it)] != source) // piece exists && location is empty.
-                            {
-                                return static_cast<int64_t>(*it);
-                            }
-                        }
-                    }
-                    return -1;
-                };
-
-                int64_t defenceResult = checkLines((uint16_t)BKEPiece_e::X_PIECE,(uint16_t)BKEPiece_e::O_PIECE);
-                if (defenceResult != -1)
-                {
-                    index = static_cast<uint8_t>(defenceResult);
+                    index = static_cast<uint8_t>(result);
                     return true;
                 }
-                int64_t offenceResult = checkLines((uint16_t)BKEPiece_e::O_PIECE,(uint16_t)BKEPiece_e::X_PIECE);
-                if (offenceResult != -1)
+                result = Utils::BKEStrategy::CheckBoardLines(BKEPiece_e::X_PIECE,BKEPiece_e::O_PIECE);
+                if (result != -1)
                 {
-                    index = static_cast<uint8_t>(offenceResult);
+                    index = static_cast<uint8_t>(result);
                     return true;
                 }
+                result = Utils::BKEStrategy::CheckMove(BKEPiece_e::X_PIECE);
+                if (result != -1)
+                {
+                    index = static_cast<uint8_t>(result);
+                    return true;
+                }
+                // no valid solution found, pick any
+                WARNING("No viable move found, picked random");
+                return PlayPiece(BKEStrategy_e::EASY, index);
             }
-            break;
             case BKEStrategy_e::EASY:
             {
+                if (Utils::BKEStrategy::IsBoardFilled())
+                {
+                    INFO("No move possible, board is full.");
+                    return false;
+                }
+
                 std::random_device dev;
                 std::mt19937 rng(dev());
                 std::uniform_int_distribution<std::mt19937::result_type> dist(0, 8);
@@ -530,7 +548,7 @@ namespace Frame
                 {
                     index = static_cast<uint8_t>(dist(rng));
                 }
-                index += BOARD_START; //static_cast<uint8_t>(BOARD_START + index);
+                index += BOARD_START;
                 return true;
             }
             case BKEStrategy_e::MANUAL:
