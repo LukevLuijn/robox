@@ -40,8 +40,11 @@ namespace Frame
         : IFrame(parent), m_bitmapPieceO(Utils::Bitmap::CreateBitmap("piece_o.png", wxSize(80, 80))),
           m_bitmapPieceX(Utils::Bitmap::CreateBitmap("piece_x.png", wxSize(80, 80))),
           m_bitmapEmpty(Utils::Bitmap::SetTransparent(m_bitmapPieceX)), m_storage({5, 5}), m_gameActive(false),
-          m_gameStart(std::chrono::steady_clock::now())
+          m_gameStart(std::chrono::steady_clock::now()), m_strategy(BKEStrategy_e::EASY)
     {
+        std::cout << "constructor BKE" << std::endl;
+
+
         InitializeFrame();
         ConnectEvents();
         this->Connect(wxEVT_TIMER, wxTimerEventHandler(BKECtrl::OnUpdateEvent), nullptr, this);
@@ -52,6 +55,8 @@ namespace Frame
     }
     BKECtrl::~BKECtrl()
     {
+        std::cout << "destructor BKE" << std::endl;
+
         DisconnectEvents();
         this->Disconnect(wxEVT_TIMER, wxTimerEventHandler(BKECtrl::OnUpdateEvent), nullptr, this);
     }
@@ -130,7 +135,12 @@ namespace Frame
                                         UpdateFields();
                                     }
                                 }
-                                BoardInteraction(PlayPiece(m_strategy));
+                                uint8_t pieceIndex = 0;
+                                if (PlayPiece(m_strategy, pieceIndex))
+                                {
+                                    WARNING("Board interaction", pieceIndex);
+                                    BoardInteraction(pieceIndex);
+                                }
                             }
                             break;
                             case BKEPiece_e::NO_PIECE:
@@ -378,7 +388,7 @@ namespace Frame
     void BKECtrl::UpdateStatistics(BKEResult_e result)
     {
         ++statistics[Statistics_e::GAMES_PLAYED];
-        switch(Driver::BKEDriver::m_result)
+        switch (result)
         {
             case BKEResult_e::GAME_WON:
                 ++statistics[Statistics_e::GAMES_WON];
@@ -392,11 +402,11 @@ namespace Frame
         }
 
         float wonPercentage =
-                static_cast<float>(statistics[Statistics_e::GAMES_WON] / statistics[Statistics_e::GAMES_PLAYED])*100;
+                static_cast<float>(statistics[Statistics_e::GAMES_WON] / statistics[Statistics_e::GAMES_PLAYED]) * 100;
         float lostPercentage =
-                static_cast<float>(statistics[Statistics_e::GAMES_LOST] / statistics[Statistics_e::GAMES_PLAYED])*100;
+                static_cast<float>(statistics[Statistics_e::GAMES_LOST] / statistics[Statistics_e::GAMES_PLAYED]) * 100;
         float drawPercentage =
-                static_cast<float>(statistics[Statistics_e::GAMES_DRAW] / statistics[Statistics_e::GAMES_PLAYED])*100;
+                static_cast<float>(statistics[Statistics_e::GAMES_DRAW] / statistics[Statistics_e::GAMES_PLAYED]) * 100;
 
         m_textGamesPlayedValue->SetLabel(std::to_string(statistics[Statistics_e::GAMES_PLAYED]));
         m_textWonValue->SetLabel(std::to_string(statistics[Statistics_e::GAMES_WON]));
@@ -411,7 +421,7 @@ namespace Frame
     {
         float A0 = Driver::RobotDriver::m_dataManager.m_segment00.m_idlePosition / 2;
         float A1 = Driver::RobotDriver::m_dataManager.m_segment01.m_idlePosition;
-        float A2 = Driver::RobotDriver::m_dataManager.m_segment02.m_idlePosition;
+        float A2 = Driver::RobotDriver::m_dataManager.m_segment02.m_idlePosition -360;
         float A3 = Driver::RobotDriver::m_dataManager.m_segment03.m_idlePosition;
         Move(A0, A1, A2, A3);
     }
@@ -460,32 +470,74 @@ namespace Frame
         Driver::RobotController::GetInstance().SetNewPositionA3(A3);
         Driver::RobotController::GetInstance().RunRobot();
     }
-    uint8_t BKECtrl::PlayPiece(BKEStrategy_e strategy)
+    bool BKECtrl::PlayPiece(BKEStrategy_e strategy, uint8_t& index)
     {
-        switch(strategy)
+        switch (strategy)
         {
             case BKEStrategy_e::FAIR:
-                // TODO
-                break;
+            {
+                typedef std::array<size_t, 3> Line;
+                std::array<Line, 8> lines = {
+                        Line{0,1,2},
+                        Line{3,4,5},
+                        Line{6,7,8},
+                        Line{0,3,6},
+                        Line{1,4,7},
+                        Line{2,5,8},
+                        Line{0,4,8},
+                        Line{6,4,2},
+                };
+
+                auto checkLines = [&lines](uint16_t target, uint16_t source) -> int64_t
+                {
+                    for(const Line& line : lines)
+                    {
+                        auto amount = std::count_if(line.begin(), line.end(), [&target](uint16_t piece){ return Driver::BKEDriver::m_board[piece] == target;});
+                        if (amount >= 2) // almost won
+                        {
+                            auto it = std::find_if(line.begin(), line.end(), [&target](uint16_t piece){ return Driver::BKEDriver::m_board[piece] != target;});
+                            if (it != line.end() && Driver::BKEDriver::m_board[(*it)] != source) // piece exists && location is empty.
+                            {
+                                return static_cast<int64_t>(*it);
+                            }
+                        }
+                    }
+                    return -1;
+                };
+
+                int64_t defenceResult = checkLines((uint16_t)BKEPiece_e::X_PIECE,(uint16_t)BKEPiece_e::O_PIECE);
+                if (defenceResult != -1)
+                {
+                    index = static_cast<uint8_t>(defenceResult);
+                    return true;
+                }
+                int64_t offenceResult = checkLines((uint16_t)BKEPiece_e::O_PIECE,(uint16_t)BKEPiece_e::X_PIECE);
+                if (offenceResult != -1)
+                {
+                    index = static_cast<uint8_t>(offenceResult);
+                    return true;
+                }
+            }
+            break;
             case BKEStrategy_e::EASY:
             {
                 std::random_device dev;
                 std::mt19937 rng(dev());
                 std::uniform_int_distribution<std::mt19937::result_type> dist(0, 8);
 
-                size_t index = dist(rng);
+                index = static_cast<uint8_t>(dist(rng));
                 while (Driver::BKEDriver::m_board[index] != (uint8_t) BKEPiece_e::NO_PIECE)
                 {
-                    index = dist(rng);
+                    index = static_cast<uint8_t>(dist(rng));
                 }
-                return static_cast<uint8_t>(BOARD_START + index);
+                index += BOARD_START; //static_cast<uint8_t>(BOARD_START + index);
+                return true;
             }
-                break;
             case BKEStrategy_e::MANUAL:
                 // do nothing.
                 break;
         }
-        return 0;
+        return false;
     }
     void BKECtrl::OnUpdateEvent(wxTimerEvent& event)
     {
@@ -796,15 +848,18 @@ namespace Frame
         m_buttonHome = new wxButton(m_panel41, wxID_ANY, wxT("Go to home"), wxDefaultPosition, wxDefaultSize, 0);
         bSizer32->Add(m_buttonHome, 1, wxALL | wxEXPAND, 5);
 
-        m_strategyButtonManual = new wxToggleButton( m_panel41, wxID_ANY, wxT("Manual"), wxDefaultPosition, wxDefaultSize, 0 );
-        bSizer32->Add( m_strategyButtonManual, 0, wxALL|wxEXPAND, 5 );
+        m_strategyButtonManual =
+                new wxToggleButton(m_panel41, wxID_ANY, wxT("Manual"), wxDefaultPosition, wxDefaultSize, 0);
+        bSizer32->Add(m_strategyButtonManual, 0, wxALL | wxEXPAND, 5);
 
-        m_strategyButtonFair = new wxToggleButton( m_panel41, wxID_ANY, wxT("Fair"), wxDefaultPosition, wxDefaultSize, 0 );
-        bSizer32->Add( m_strategyButtonFair, 0, wxALL|wxEXPAND, 5 );
+        m_strategyButtonFair =
+                new wxToggleButton(m_panel41, wxID_ANY, wxT("Fair"), wxDefaultPosition, wxDefaultSize, 0);
+        bSizer32->Add(m_strategyButtonFair, 0, wxALL | wxEXPAND, 5);
 
-        m_strategyButtonEasy = new wxToggleButton( m_panel41, wxID_ANY, wxT("Easy"), wxDefaultPosition, wxDefaultSize, 0 );
-        m_strategyButtonEasy->SetValue( true );
-        bSizer32->Add( m_strategyButtonEasy, 0, wxALL|wxEXPAND, 5 );
+        m_strategyButtonEasy =
+                new wxToggleButton(m_panel41, wxID_ANY, wxT("Easy"), wxDefaultPosition, wxDefaultSize, 0);
+        m_strategyButtonEasy->SetValue(true);
+        bSizer32->Add(m_strategyButtonEasy, 0, wxALL | wxEXPAND, 5);
 
         m_panel41->SetSizer(bSizer32);
         m_panel41->Layout();
@@ -1113,9 +1168,18 @@ namespace Frame
                                    nullptr,
                                    this);
 
-        m_strategyButtonManual->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( BKECtrl::OnToggleManual ), nullptr, this );
-        m_strategyButtonFair->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( BKECtrl::OnToggleFair ), nullptr, this );
-        m_strategyButtonEasy->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( BKECtrl::OnToggleEasy ), nullptr, this );
+        m_strategyButtonManual->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED,
+                                        wxCommandEventHandler(BKECtrl::OnToggleManual),
+                                        nullptr,
+                                        this);
+        m_strategyButtonFair->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED,
+                                      wxCommandEventHandler(BKECtrl::OnToggleFair),
+                                      nullptr,
+                                      this);
+        m_strategyButtonEasy->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED,
+                                      wxCommandEventHandler(BKECtrl::OnToggleEasy),
+                                      nullptr,
+                                      this);
     }
     void BKECtrl::DisconnectEvents()
     {
@@ -1192,8 +1256,17 @@ namespace Frame
                                       nullptr,
                                       this);
 
-        m_strategyButtonManual->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( BKECtrl::OnToggleManual ), nullptr, this );
-        m_strategyButtonFair->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( BKECtrl::OnToggleFair ), nullptr, this );
-        m_strategyButtonEasy->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( BKECtrl::OnToggleEasy ), nullptr, this );
+        m_strategyButtonManual->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED,
+                                        wxCommandEventHandler(BKECtrl::OnToggleManual),
+                                        nullptr,
+                                        this);
+        m_strategyButtonFair->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED,
+                                      wxCommandEventHandler(BKECtrl::OnToggleFair),
+                                      nullptr,
+                                      this);
+        m_strategyButtonEasy->Connect(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED,
+                                      wxCommandEventHandler(BKECtrl::OnToggleEasy),
+                                      nullptr,
+                                      this);
     }
 }// namespace Frame

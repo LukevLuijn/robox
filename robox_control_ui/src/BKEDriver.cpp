@@ -58,15 +58,6 @@ namespace Driver
                 ERROR("unable to parse", message);
             }
         }
-        else
-        {
-            std::vector<std::string> logs = Utils::String::Divide(message, LOG_START_CHAR, LOG_STOP_CHAR);
-
-            for (const std::string& log : logs)
-            {
-                Logger::Logger::GetInstance().LogExternal(log);
-            }
-        }
     }
     bool BKEDriver::NewPiecePlaced(BKEPiece_e& piece)
     {
@@ -89,6 +80,15 @@ namespace Driver
                 case BKEType_e::BOARD_RESULT:
                 case BKEType_e::BOARD_UPDATE:
                 {
+                    if (static_cast<BKEType_e>(message[1] - '0') == BKEType_e::BOARD_RESULT)
+                    {
+                        INFO("BOARD RESULT", message);
+                    }
+                    else // BKEType_e::BOARD_UPDATE
+                    {
+                        INFO("BOARD UPDATE", message);
+                    }
+
                     std::string params = message.substr(2);                                 // remove message header
                     Utils::String::Remove(params, std::vector<char>{'[', ']'});             // remove encasement
                     std::vector<std::string> paramList = Utils::String::Divide(params, ',');// separate values by ','
@@ -132,6 +132,8 @@ namespace Driver
                 break;
                 case BKEType_e::GAME_RESULT:
                 {
+                    INFO("GAME RESULT", message);
+
                     std::string params = message.substr(2);                                 // remove message header
                     Utils::String::Remove(params, std::vector<char>{'[', ']'});             // remove encasement
                     std::vector<std::string> paramList = Utils::String::Divide(params, ',');// separate values by ','

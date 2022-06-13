@@ -31,7 +31,7 @@ namespace Base
         Bind(LOG_EVENT, &Controller::OnLogEvent, this);
         Bind(BKE_EVENT, &Controller::OnBKEEvent, this);
 
-        Bind(GAME_COMPLETE, &Controller::OnClickMenuStop, this);
+//        Bind(GAME_COMPLETE, &Controller::OnClickMenuStop, this);
     }
     void Controller::OnCloseWindow(wxCloseEvent& event)
     {
@@ -74,6 +74,7 @@ namespace Base
     }
     void Controller::OnClickBKE(wxCommandEvent& event)
     {
+        Driver::RobotController::GetInstance().SetDirectSend(false);
         SetNewControlFrame(Frame::FrameTypes_e::BKE_CTRL);
         INFO("New control method set", "BKE control");
 
@@ -185,7 +186,6 @@ namespace Base
     {
         auto type = static_cast<BKEType_e>(event.GetString()[1] - '0');
         builder.UpdateControlPanel(type);
-        INFO("ON BKE EVENT");
         event.Skip();
     }
     void Controller::OnLogEvent(wxCommandEvent& event)
@@ -193,13 +193,6 @@ namespace Base
         m_logPanel->WriteMessage();
         Layout();
         event.Skip();
-    }
-    void Controller::OnGameComplete(wxCommandEvent& event)
-    {
-        WARNING("GAME COMPLETE");
-        Driver::RobotController::GetInstance().StopRobot();
-        DeactivateControl();
-        m_buttonMenuActivate->SetValue(false);
     }
     void Controller::ResponseCallback(const std::string& response)
     {
@@ -256,6 +249,8 @@ namespace Base
         {
             m_placeholder->Disable();
         }
+
+
     }
     void Controller::ActivateControl()
     {

@@ -35,6 +35,7 @@ namespace Frame
             case DataType_e::HOMING_COMPLETE:
                 INFO("Homing sequence complete");
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                UpdateFields();
                 SyncFields();
 //                Enable();
                 break;

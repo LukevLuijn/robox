@@ -386,6 +386,7 @@ namespace Logger
     private:
         std::mutex m_logMutex;
         std::unique_ptr<ILogger> m_logObject;
+        std::unique_ptr<ILogger> m_consoleLogObject;
 
         static LogType_e m_type;
         static bool m_whiteList[4];

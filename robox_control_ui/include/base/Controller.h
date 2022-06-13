@@ -16,8 +16,6 @@ wxDEFINE_EVENT(UPDATE_EVENT, wxCommandEvent);
 wxDEFINE_EVENT(BKE_EVENT, wxCommandEvent);
 wxDEFINE_EVENT(LOG_EVENT, wxCommandEvent);
 
-wxDECLARE_EVENT(GAME_COMPLETE, wxCommandEvent);
-
 namespace Base
 {
     class Controller : public Frame::MainFrame
@@ -71,9 +69,6 @@ namespace Base
         void OnUpdateEvent(wxCommandEvent& event);
         void OnBKEEvent(wxCommandEvent& event);
         void OnLogEvent(wxCommandEvent& event);
-        void OnGameComplete(wxCommandEvent& event);
-
-
 
     private:
         void SetNewControlFrame(Frame::FrameTypes_e type);

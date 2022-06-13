@@ -6,6 +6,7 @@
 // ======================================
 
 #include "ScrolledLogWindow.h"
+#include "Logger.h"
 
 namespace Widgets
 {
@@ -23,76 +24,87 @@ namespace Widgets
 
     void ScrolledLogWindow::AddMessage(const Logger::LogMessage& message, bool isReinstatement)
     {
-        switch (message.m_verbosityType)
+        try
         {
-            case VerbosityType_e::ERROR:
+            switch (message.m_verbosityType)
             {
-                auto* panel = new PanelError(m_sizer->GetContainingWindow(), message);
+                case VerbosityType_e::ERROR:
+                {
+                    auto* panel = new PanelError(m_sizer->GetContainingWindow(), message);
 
-                bool enabled = m_verbosity[static_cast<size_t>(message.m_verbosityType)] &&
-                               m_sources[static_cast<size_t>(message.m_sourceType)];
-                panel->Show(enabled);
+                    bool enabled = m_verbosity[static_cast<size_t>(message.m_verbosityType)] &&
+                                   m_sources[static_cast<size_t>(message.m_sourceType)];
+                    panel->Show(enabled);
 
-                m_sizer->Insert(0, panel, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+                    m_sizer->Insert(0, panel, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+                }
+                    break;
+                case VerbosityType_e::WARNING:
+                {
+                    auto* panel = new PanelWarning(m_sizer->GetContainingWindow(), message);
+
+                    bool enabled = m_verbosity[static_cast<size_t>(message.m_verbosityType)] &&
+                                   m_sources[static_cast<size_t>(message.m_sourceType)];
+                    panel->Show(enabled);
+
+                    m_sizer->Insert(0, panel, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+                }
+                    break;
+                case VerbosityType_e::INFO:
+                {
+                    auto* panel = new PanelInfo(m_sizer->GetContainingWindow(), message);
+
+                    bool enabled = m_verbosity[static_cast<size_t>(message.m_verbosityType)] &&
+                                   m_sources[static_cast<size_t>(message.m_sourceType)];
+                    panel->Show(enabled);
+
+                    m_sizer->Insert(0, panel, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+                }
+                    break;
+                case VerbosityType_e::DEBUG:
+                {
+                    auto* panel = new PanelDebug(m_sizer->GetContainingWindow(), message);
+
+                    bool enabled = m_verbosity[static_cast<size_t>(message.m_verbosityType)] &&
+                                   m_sources[static_cast<size_t>(message.m_sourceType)];
+                    panel->Show(enabled);
+
+                    m_sizer->Insert(0, panel, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+                }
+                    break;
+                case VerbosityType_e::TRANS:
+                {
+                    auto* panel = new PanelTransition(m_sizer->GetContainingWindow(), message);
+
+                    bool enabled = m_verbosity[static_cast<size_t>(message.m_verbosityType)] &&
+                                   m_sources[static_cast<size_t>(message.m_sourceType)];
+                    panel->Show(enabled);
+
+                    m_sizer->Insert(0, panel, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+                }
+                    break;
             }
-            break;
-            case VerbosityType_e::WARNING:
+            if (!isReinstatement)
             {
-                auto* panel = new PanelWarning(m_sizer->GetContainingWindow(), message);
+                m_backup.insert(m_backup.begin(), message);
+                m_sizer->Layout();
+                m_sizer->FitInside(m_sizer->GetContainingWindow());
+                m_sizer->GetContainingWindow()->Update();
 
-                bool enabled = m_verbosity[static_cast<size_t>(message.m_verbosityType)] &&
-                               m_sources[static_cast<size_t>(message.m_sourceType)];
-                panel->Show(enabled);
-
-                m_sizer->Insert(0, panel, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
+                if (m_backup.size() > MAX_BUFFER_SIZE)
+                {
+                    m_sizer->GetChildren().pop_back();
+                    m_backup.pop_back();
+                }
             }
-            break;
-            case VerbosityType_e::INFO:
-            {
-                auto* panel = new PanelInfo(m_sizer->GetContainingWindow(), message);
-
-                bool enabled = m_verbosity[static_cast<size_t>(message.m_verbosityType)] &&
-                               m_sources[static_cast<size_t>(message.m_sourceType)];
-                panel->Show(enabled);
-
-                m_sizer->Insert(0, panel, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
-            }
-            break;
-            case VerbosityType_e::DEBUG:
-            {
-                auto* panel = new PanelDebug(m_sizer->GetContainingWindow(), message);
-
-                bool enabled = m_verbosity[static_cast<size_t>(message.m_verbosityType)] &&
-                            m_sources[static_cast<size_t>(message.m_sourceType)];
-                panel->Show(enabled);
-
-                m_sizer->Insert(0, panel, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
-            }
-            break;
-            case VerbosityType_e::TRANS:
-            {
-                auto* panel = new PanelTransition(m_sizer->GetContainingWindow(), message);
-
-                bool enabled = m_verbosity[static_cast<size_t>(message.m_verbosityType)] &&
-                               m_sources[static_cast<size_t>(message.m_sourceType)];
-                panel->Show(enabled);
-
-                m_sizer->Insert(0, panel, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
-            }
-            break;
         }
-        if (!isReinstatement)
+        catch(std::bad_alloc& e)
         {
-            m_backup.insert(m_backup.begin(), message);
-            m_sizer->Layout();
-            m_sizer->FitInside(m_sizer->GetContainingWindow());
-            m_sizer->GetContainingWindow()->Update();
-
-            if (m_backup.size() > MAX_BUFFER_SIZE)
-            {
-                m_sizer->GetChildren().pop_back();
-                m_backup.pop_back();
-            }
+            ERROR("exception caught", e.what());
+        }
+        catch(...)
+        {
+            ERROR("undefined exception caught");
         }
     }
     void ScrolledLogWindow::ToggleError()

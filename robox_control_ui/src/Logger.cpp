@@ -29,12 +29,14 @@ namespace Logger
             case LogType_e::CONSOLE:
             {
                 m_logObject = std::make_unique<LogToConsole>();
+                m_consoleLogObject = nullptr;
             }
             break;
 #if USING_WIDGETS
             case LogType_e::WX_PANEL:
             {
                 m_logObject = std::make_unique<LogToWidget>();
+                m_consoleLogObject = std::make_unique<LogToConsole>();
             }
             break;
 #endif
@@ -113,6 +115,10 @@ namespace Logger
     {
         std::lock_guard<std::mutex> locker(m_logMutex);
         m_logObject->Log(message);
+        if (m_consoleLogObject)
+        {
+            m_consoleLogObject->Log(message);
+        }
     }
 
 }// namespace Utils

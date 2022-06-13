@@ -77,7 +77,7 @@ namespace Frame
         static float GetGripAngle(float A1, float A2);
         static void TriggerGripper(uint8_t value);
         static void Move(float A0, float A1, float A2, float A3);
-        static uint8_t PlayPiece(BKEStrategy_e strategy);
+        static bool PlayPiece(BKEStrategy_e strategy, uint8_t& index);
 
     private:
         virtual void OnUpdateEvent(wxTimerEvent& event);
