@@ -10,13 +10,16 @@
 
 #include "FrameBuilder.h"
 #include "MainFrame.h"
+#include "BKECtrl.h"
+
+wxDEFINE_EVENT(UPDATE_EVENT, wxCommandEvent);
+wxDEFINE_EVENT(BKE_EVENT, wxCommandEvent);
+wxDEFINE_EVENT(LOG_EVENT, wxCommandEvent);
+
+wxDECLARE_EVENT(GAME_COMPLETE, wxCommandEvent);
 
 namespace Base
 {
-    wxDEFINE_EVENT(UPDATE_EVENT, wxCommandEvent);
-    wxDEFINE_EVENT(BKE_EVENT, wxCommandEvent);
-    wxDEFINE_EVENT(LOG_EVENT, wxCommandEvent);
-
     class Controller : public Frame::MainFrame
     {
     public:
@@ -42,6 +45,16 @@ namespace Base
          */
         void BKECallback(const std::string& message);
 
+        /**
+         * @brief Deactivate robot and disable control.
+         *
+         */
+        void DeactivateRobot();
+        /**
+         * @brief Activate robot and enable control.
+         */
+        void ActivateRobot();
+
     private:
         void OnCloseWindow(wxCloseEvent& event) override;
         void OnClickManual(wxCommandEvent& event) override;
@@ -58,6 +71,8 @@ namespace Base
         void OnUpdateEvent(wxCommandEvent& event);
         void OnBKEEvent(wxCommandEvent& event);
         void OnLogEvent(wxCommandEvent& event);
+        void OnGameComplete(wxCommandEvent& event);
+
 
 
     private:

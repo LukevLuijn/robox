@@ -45,10 +45,6 @@ namespace Frame
         wxStaticText* m_iconY{};
     };
 
-//    struct Joint {
-//        double x, y;
-//    };
-
     struct Chain {
         wxPoint base, mid, end;
         double angle0{}, angle1{};

@@ -2,6 +2,8 @@
 // Created by luke on 10-06-22.
 //
 
+#include <random>
+
 #include "wx/sizer.h"
 
 #include "BKECtrl.h"
@@ -9,22 +11,49 @@
 
 #include "BKEDriver.h"
 #include "Bitmap.h"
+#include "Controller.h"
+#include "MainApplication.h"
 #include "RobotController.h"
 
+namespace
+{
+    enum class Statistics_e : uint8_t
+    {
+        GAMES_PLAYED = 2,
+        GAMES_WON = 3,
+        GAMES_LOST = 4,
+        GAMES_DRAW = 5,
+    };
+
+    const std::chrono::time_point<std::chrono::steady_clock> programStartTime = std::chrono::steady_clock::now();
+    std::map<Statistics_e, uint32_t> statistics = {
+            {Statistics_e::GAMES_PLAYED, 0},
+            {Statistics_e::GAMES_WON, 0},
+            {Statistics_e::GAMES_LOST, 0},
+            {Statistics_e::GAMES_DRAW, 0},
+    };
+}// namespace
 
 namespace Frame
 {
     BKECtrl::BKECtrl(wxWindow* parent)
         : IFrame(parent), m_bitmapPieceO(Utils::Bitmap::CreateBitmap("piece_o.png", wxSize(80, 80))),
           m_bitmapPieceX(Utils::Bitmap::CreateBitmap("piece_x.png", wxSize(80, 80))),
-          m_bitmapEmpty(Utils::Bitmap::SetTransparent(m_bitmapPieceX)),m_storage({5,5})
+          m_bitmapEmpty(Utils::Bitmap::SetTransparent(m_bitmapPieceX)), m_storage({5, 5}), m_gameActive(false),
+          m_gameStart(std::chrono::steady_clock::now())
     {
         InitializeFrame();
         ConnectEvents();
+        this->Connect(wxEVT_TIMER, wxTimerEventHandler(BKECtrl::OnUpdateEvent), nullptr, this);
+
+        m_timer = new wxTimer;
+        m_timer->SetOwner(this);
+        m_timer->Start(1000);
     }
     BKECtrl::~BKECtrl()
     {
         DisconnectEvents();
+        this->Disconnect(wxEVT_TIMER, wxTimerEventHandler(BKECtrl::OnUpdateEvent), nullptr, this);
     }
     wxPanel* BKECtrl::GetPanel()
     {
@@ -63,40 +92,67 @@ namespace Frame
     {
         switch (type)
         {
+            case BKEType_e::BOARD_RESULT:
             case BKEType_e::BOARD_UPDATE:
             {
                 int64_t piecesX = std::count_if(Driver::BKEDriver::m_board.begin(),
                                                 Driver::BKEDriver::m_board.end(),
                                                 [](uint16_t piece) {
-                                                    return piece == (uint16_t)BKEPiece_e::X_PIECE;
+                                                    return piece == (uint16_t) BKEPiece_e::X_PIECE;
                                                 });
-                m_storage[(size_t)StorageType_e::STORAGE_X] = static_cast<uint8_t>(5 - piecesX);
+                m_storage[(size_t) StorageType_e::STORAGE_X] = static_cast<uint8_t>(5 - piecesX);
                 int64_t piecesO = std::count_if(Driver::BKEDriver::m_board.begin(),
                                                 Driver::BKEDriver::m_board.end(),
                                                 [](uint16_t piece) {
-                                                  return piece == (uint16_t)BKEPiece_e::O_PIECE;
+                                                    return piece == (uint16_t) BKEPiece_e::O_PIECE;
                                                 });
-                m_storage[(size_t)StorageType_e::STORAGE_O] = static_cast<uint8_t>(5 - piecesO);
+                m_storage[(size_t) StorageType_e::STORAGE_O] = static_cast<uint8_t>(5 - piecesO);
+
+                if (type == BKEType_e::BOARD_UPDATE)
+                {
+                    BKEPiece_e newPiece;
+                    if (Driver::BKEDriver::GetInstance().NewPiecePlaced(newPiece))
+                    {
+                        switch (newPiece)
+                        {
+                            case BKEPiece_e::X_PIECE:
+                            {
+                                if (!m_gameActive)
+                                {
+                                    auto window = dynamic_cast<Base::Controller*>(Base::TheApp().GetTopWindow());
+                                    if (window)
+                                    {
+                                        window->ActivateRobot();
+
+                                        m_gameActive = true;
+                                        m_gameStart = std::chrono::steady_clock::now();
+                                        SyncFields();
+                                        UpdateFields();
+                                    }
+                                }
+                                BoardInteraction(PlayPiece(m_strategy));
+                            }
+                            break;
+                            case BKEPiece_e::NO_PIECE:
+                            case BKEPiece_e::O_PIECE:
+                                break;
+                        }
+                    }
+                }
 
                 for (std::size_t i = 0; i < Driver::BKEDriver::m_board.size(); ++i)
                 {
                     switch (static_cast<BKEPiece_e>(Driver::BKEDriver::m_board[i]))
                     {
                         case BKEPiece_e::NO_PIECE:
-                        {
                             m_boardButtons[i]->SetBitmap(m_bitmapEmpty);
-                        }
-                        break;
+                            break;
                         case BKEPiece_e::O_PIECE:
-                        {
                             m_boardButtons[i]->SetBitmap(m_bitmapPieceO);
-                        }
-                        break;
+                            break;
                         case BKEPiece_e::X_PIECE:
-                        {
                             m_boardButtons[i]->SetBitmap(m_bitmapPieceX);
-                        }
-                        break;
+                            break;
                     }
                     m_boardButtons[i]->Refresh();
                     m_boardButtons[i]->Update();
@@ -105,9 +161,46 @@ namespace Frame
             break;
             case BKEType_e::GAME_RESULT:
             {
+                const std::array<std::string, 3> results = {"Game won", "Game lost", "Game draw"};
+                INFO("GAME COMPLETE", results[(size_t) Driver::BKEDriver::m_result]);
+                Driver::RobotController::GetInstance().PauseRobot(1000);
+
+                auto WaitAndClear = [&]() {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));// wait for board result
+                    ClearBoard();
+
+                    auto window = dynamic_cast<Base::Controller*>(Base::TheApp().GetTopWindow());
+                    if (window)
+                    {
+                        window->DeactivateRobot();
+                        m_gameActive = false;
+                    }
+                };
+                std::thread clearBoardThread(WaitAndClear);
+                clearBoardThread.detach();
+
+                UpdateStatistics(Driver::BKEDriver::m_result);
             }
             break;
         }
+    }
+    void BKECtrl::UpdateFields()
+    {
+        m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].first = 0;
+        m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].second = 100;
+        m_minMaxValues[(size_t) Fields_e::FIELD_ACCEL].first = 0;
+        m_minMaxValues[(size_t) Fields_e::FIELD_ACCEL].second = 100;
+
+        m_sliderSpeed->SetMin(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].first * 100));
+        m_sliderSpeed->SetMax(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].second * 100));
+
+        m_sliderAccel->SetMin(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_ACCEL].first * 100));
+        m_sliderAccel->SetMax(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_ACCEL].second * 100));
+
+        Refresh();
+        Update();
+
+        INFO("BKECtrl fields updated");
     }
     void BKECtrl::SyncFields()
     {
@@ -162,7 +255,6 @@ namespace Frame
         BKELocation storageLocation{};
         if (!GetStorageLocation(type, StorageInteraction_e::RETRIEVE, storageLocation))
         {
-            ERROR("Placement of piece not possible, no pieces left.");
             return;
         }
 
@@ -189,7 +281,6 @@ namespace Frame
         BKELocation storageLocation{};
         if (!GetStorageLocation(type, StorageInteraction_e::STORE, storageLocation))
         {
-            ERROR("Removal of piece not possible, storage is full.");
             return;
         }
         MoveToLocation(m_locations[BOARD_START + index], false);
@@ -214,7 +305,7 @@ namespace Frame
     {
         if (interaction == StorageInteraction_e::RETRIEVE)
         {
-            int64_t index = m_storage[(size_t)type];
+            int64_t index = m_storage[(size_t) type];
 
             if (index == 0)
             {
@@ -222,23 +313,25 @@ namespace Frame
                 return false;
             }
 
-            int64_t storageIndex = (type == StorageType_e::STORAGE_O) ? STORAGE_O_START + (index-1) : STORAGE_X_START + (index-1);
+            int64_t storageIndex =
+                    (type == StorageType_e::STORAGE_O) ? STORAGE_O_START + (index - 1) : STORAGE_X_START + (index - 1);
             location = m_locations[static_cast<uint64_t>(storageIndex)];
-            --m_storage[(size_t)type];
+            --m_storage[(size_t) type];
             return true;
         }
-        else // StorageInteraction_e::STORE
+        else// StorageInteraction_e::STORE
         {
-            int64_t index = m_storage[(size_t)type];
+            int64_t index = m_storage[(size_t) type];
 
             if (index >= 5)
             {
                 ERROR("Storage is full for this type.");
                 return false;
             }
-            int64_t storageIndex = (type == StorageType_e::STORAGE_O) ? STORAGE_O_START + (index) : STORAGE_X_START + (index);
+            int64_t storageIndex =
+                    (type == StorageType_e::STORAGE_O) ? STORAGE_O_START + (index) : STORAGE_X_START + (index);
             location = m_locations[static_cast<uint64_t>(storageIndex)];
-            ++m_storage[(size_t)type];
+            ++m_storage[(size_t) type];
             return true;
         }
     }
@@ -263,6 +356,57 @@ namespace Frame
             }
         }
     }
+    void BKECtrl::ClearBoard()
+    {
+        if (Driver::BKEDriver::m_board[4] != (uint8_t) BKEPiece_e::NO_PIECE)
+        {
+            BoardInteraction(static_cast<uint8_t>(4), false);
+        }
+
+        for (size_t i = 0; i < Driver::BKEDriver::m_board.size(); ++i)
+        {
+            if (i == 4)
+            {
+                continue;
+            }
+            if (Driver::BKEDriver::m_board[i] != (uint8_t) BKEPiece_e::NO_PIECE)
+            {
+                BoardInteraction(static_cast<uint8_t>(i), false);
+            }
+        }
+    }
+    void BKECtrl::UpdateStatistics(BKEResult_e result)
+    {
+        ++statistics[Statistics_e::GAMES_PLAYED];
+        switch(Driver::BKEDriver::m_result)
+        {
+            case BKEResult_e::GAME_WON:
+                ++statistics[Statistics_e::GAMES_WON];
+                break;
+            case BKEResult_e::GAME_LOST:
+                ++statistics[Statistics_e::GAMES_LOST];
+                break;
+            case BKEResult_e::GAME_DRAW:
+                ++statistics[Statistics_e::GAMES_DRAW];
+                break;
+        }
+
+        float wonPercentage =
+                static_cast<float>(statistics[Statistics_e::GAMES_WON] / statistics[Statistics_e::GAMES_PLAYED])*100;
+        float lostPercentage =
+                static_cast<float>(statistics[Statistics_e::GAMES_LOST] / statistics[Statistics_e::GAMES_PLAYED])*100;
+        float drawPercentage =
+                static_cast<float>(statistics[Statistics_e::GAMES_DRAW] / statistics[Statistics_e::GAMES_PLAYED])*100;
+
+        m_textGamesPlayedValue->SetLabel(std::to_string(statistics[Statistics_e::GAMES_PLAYED]));
+        m_textWonValue->SetLabel(std::to_string(statistics[Statistics_e::GAMES_WON]));
+        m_textLostValue->SetLabel(std::to_string(statistics[Statistics_e::GAMES_LOST]));
+        m_textDrawValue->SetLabel(std::to_string(statistics[Statistics_e::GAMES_DRAW]));
+
+        m_textWonPercentage->SetLabel(Utils::String::ToString(wonPercentage, 2));
+        m_textLostPercentage->SetLabel(Utils::String::ToString(lostPercentage, 2));
+        m_textDrawPercentage->SetLabel(Utils::String::ToString(drawPercentage, 2));
+    }
     void BKECtrl::MoveToActiveHome()
     {
         float A0 = Driver::RobotDriver::m_dataManager.m_segment00.m_idlePosition / 2;
@@ -277,26 +421,30 @@ namespace Frame
         A0 += (isDrop) ? 5 : 0;
         float A1 = location.a1;
         float A2 = location.a2;
+        float A3 = GetGripAngle(A1, A2);
+        Move(A0, A1, A2, A3);
+    }
+    float BKECtrl::GetGripAngle(float A1, float A2)
+    {
+        const float L1 = Driver::RobotDriver::m_dataManager.m_lengthSegment01;
+        const float L2 = Driver::RobotDriver::m_dataManager.m_lengthSegment02;
+        const auto A1F = static_cast<float>(A1 * M_PI / 180);
+        const auto A2F = static_cast<float>(A2 * M_PI / 180);
+        const float xPos = round(L1 * cos(A1F) + L2 * cos(A1F + A2F));
+        const float yPos = round(L1 * sin(A1F) + L2 * sin(A1F + A2F));
 
         // https://howtomechatronics.com/projects/scara-robot-how-to-build-your-own-arduino-based-robot/
 
-        float A3 = (90 + A1 + A2) * -1;
-        //        A3 = (-1) * A3;
-
-        float xPos = Driver::RobotDriver::m_dataManager.m_gripperPosition[0];
-        float yPos = Driver::RobotDriver::m_dataManager.m_gripperPosition[1];
+        float A3 = 90 + A1 + A2;
+        A3 = (-1) * A3;
 
         if ((xPos < 0) && (yPos < 0))
         {
             A3 = 270 - A1 - A2;
         }
-        if (abs(A3) > 165)
-        {
-            A3 = 180 + A3;
-        }
-        A3 += 90;
 
-        Move(A0, A1, A2, A3);
+        A3 += 90;
+        return A3;
     }
     void BKECtrl::TriggerGripper(uint8_t value)
     {
@@ -312,23 +460,65 @@ namespace Frame
         Driver::RobotController::GetInstance().SetNewPositionA3(A3);
         Driver::RobotController::GetInstance().RunRobot();
     }
-    void BKECtrl::UpdateFields()
+    uint8_t BKECtrl::PlayPiece(BKEStrategy_e strategy)
     {
-        m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].first = 0;
-        m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].second = 100;
-        m_minMaxValues[(size_t) Fields_e::FIELD_ACCEL].first = 0;
-        m_minMaxValues[(size_t) Fields_e::FIELD_ACCEL].second = 100;
+        switch(strategy)
+        {
+            case BKEStrategy_e::FAIR:
+                // TODO
+                break;
+            case BKEStrategy_e::EASY:
+            {
+                std::random_device dev;
+                std::mt19937 rng(dev());
+                std::uniform_int_distribution<std::mt19937::result_type> dist(0, 8);
 
-        m_sliderSpeed->SetMin(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].first * 100));
-        m_sliderSpeed->SetMax(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_SPEED].second * 100));
+                size_t index = dist(rng);
+                while (Driver::BKEDriver::m_board[index] != (uint8_t) BKEPiece_e::NO_PIECE)
+                {
+                    index = dist(rng);
+                }
+                return static_cast<uint8_t>(BOARD_START + index);
+            }
+                break;
+            case BKEStrategy_e::MANUAL:
+                // do nothing.
+                break;
+        }
+        return 0;
+    }
+    void BKECtrl::OnUpdateEvent(wxTimerEvent& event)
+    {
+        typedef std::chrono::time_point<std::chrono::steady_clock> TP;
 
-        m_sliderAccel->SetMin(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_ACCEL].first * 100));
-        m_sliderAccel->SetMax(static_cast<int32_t>(m_minMaxValues[(size_t) Fields_e::FIELD_ACCEL].second * 100));
+        auto convert = [](int64_t time) -> std::string {
+            std::string timeStr = std::to_string(time);
+            if (time < 10)
+            {
+                timeStr = "0" + timeStr;
+            }
+            return timeStr;
+        };
 
-        Refresh();
-        Update();
+        auto getTime = [&convert](const TP& start) -> std::string {
+            auto now = std::chrono::steady_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
 
-        INFO("BKECtrl fields updated");
+            auto hours = static_cast<uint16_t>(std::floor(duration / 3600));
+            duration = duration % 3600;
+            auto minutes = static_cast<uint16_t>(std::floor(duration / 60));
+            duration = duration % 60;
+            auto seconds = static_cast<uint16_t>(duration);
+            std::string time = convert(hours) + ":" + convert(minutes) + ":" + convert(seconds);
+            return time;
+        };
+
+        m_textRunTimeValue->SetLabel(getTime(programStartTime));
+        m_textGameTimeValue->SetLabel((m_gameActive) ? getTime(m_gameStart) : "n/a [idle]");
+
+        Layout();
+
+        event.Skip();
     }
     void BKECtrl::OnKillFocusSpeed(wxFocusEvent& event)
     {
@@ -395,13 +585,7 @@ namespace Frame
     void BKECtrl::OnClickResetBoard(wxCommandEvent& event)
     {
         INFO("Clearing the board");
-        for(size_t i =0; i < Driver::BKEDriver::m_board.size(); ++i)
-        {
-            if (Driver::BKEDriver::m_board[i] != (uint8_t)BKEPiece_e::NO_PIECE)
-            {
-                BoardInteraction(static_cast<uint8_t>(i), false);
-            }
-        }
+        ClearBoard();
         MoveToActiveHome();
         event.Skip();
     }
@@ -453,6 +637,27 @@ namespace Frame
     void BKECtrl::OnClickBoard08(wxCommandEvent& event)
     {
         BoardInteraction(8);
+        event.Skip();
+    }
+    void BKECtrl::OnToggleManual(wxCommandEvent& event)
+    {
+        m_strategy = BKEStrategy_e::MANUAL;
+        m_strategyButtonEasy->SetValue(false);
+        m_strategyButtonFair->SetValue(false);
+        event.Skip();
+    }
+    void BKECtrl::OnToggleFair(wxCommandEvent& event)
+    {
+        m_strategy = BKEStrategy_e::FAIR;
+        m_strategyButtonEasy->SetValue(false);
+        m_strategyButtonManual->SetValue(false);
+        event.Skip();
+    }
+    void BKECtrl::OnToggleEasy(wxCommandEvent& event)
+    {
+        m_strategy = BKEStrategy_e::EASY;
+        m_strategyButtonManual->SetValue(false);
+        m_strategyButtonFair->SetValue(false);
         event.Skip();
     }
     void BKECtrl::InitializeFrame()
@@ -543,14 +748,14 @@ namespace Frame
                                           wxLI_HORIZONTAL | wxLI_VERTICAL);
         bSizer29->Add(m_staticLine25, 0, wxEXPAND | wxALL, 5);
 
-        m_textTurnRobox = new wxStaticText(m_turnPanel,
+        m_textTurnROBOX = new wxStaticText(m_turnPanel,
                                            wxID_ANY,
                                            wxT("ROBOX"),
                                            wxDefaultPosition,
                                            wxDefaultSize,
                                            wxALIGN_CENTER_HORIZONTAL);
-        m_textTurnRobox->Wrap(-1);
-        bSizer29->Add(m_textTurnRobox, 1, wxALL, 5);
+        m_textTurnROBOX->Wrap(-1);
+        bSizer29->Add(m_textTurnROBOX, 1, wxALL, 5);
 
         m_staticLine24 = new wxStaticLine(m_turnPanel,
                                           wxID_ANY,
@@ -591,6 +796,15 @@ namespace Frame
         m_buttonHome = new wxButton(m_panel41, wxID_ANY, wxT("Go to home"), wxDefaultPosition, wxDefaultSize, 0);
         bSizer32->Add(m_buttonHome, 1, wxALL | wxEXPAND, 5);
 
+        m_strategyButtonManual = new wxToggleButton( m_panel41, wxID_ANY, wxT("Manual"), wxDefaultPosition, wxDefaultSize, 0 );
+        bSizer32->Add( m_strategyButtonManual, 0, wxALL|wxEXPAND, 5 );
+
+        m_strategyButtonFair = new wxToggleButton( m_panel41, wxID_ANY, wxT("Fair"), wxDefaultPosition, wxDefaultSize, 0 );
+        bSizer32->Add( m_strategyButtonFair, 0, wxALL|wxEXPAND, 5 );
+
+        m_strategyButtonEasy = new wxToggleButton( m_panel41, wxID_ANY, wxT("Easy"), wxDefaultPosition, wxDefaultSize, 0 );
+        m_strategyButtonEasy->SetValue( true );
+        bSizer32->Add( m_strategyButtonEasy, 0, wxALL|wxEXPAND, 5 );
 
         m_panel41->SetSizer(bSizer32);
         m_panel41->Layout();
@@ -694,7 +908,7 @@ namespace Frame
 
         m_panel42 = new wxPanel(m_statsPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
         wxFlexGridSizer* fgSizer8;
-        fgSizer8 = new wxFlexGridSizer(2, 2, 0, 0);
+        fgSizer8 = new wxFlexGridSizer(3, 2, 0, 0);
         fgSizer8->AddGrowableCol(0);
         fgSizer8->AddGrowableCol(1);
         fgSizer8->SetFlexibleDirection(wxBOTH);
@@ -705,16 +919,25 @@ namespace Frame
         fgSizer8->Add(m_textRunTime, 1, wxALL, 5);
 
         m_textRunTimeValue =
-                new wxStaticText(m_panel42, wxID_ANY, wxT("03:25:01"), wxDefaultPosition, wxDefaultSize, 0);
+                new wxStaticText(m_panel42, wxID_ANY, wxT("00:00:00"), wxDefaultPosition, wxDefaultSize, 0);
         m_textRunTimeValue->Wrap(-1);
         fgSizer8->Add(m_textRunTimeValue, 1, wxALL, 5);
+
+        m_textGameTime = new wxStaticText(m_panel42, wxID_ANY, wxT("Play time:"), wxDefaultPosition, wxDefaultSize, 0);
+        m_textGameTime->Wrap(-1);
+        fgSizer8->Add(m_textGameTime, 1, wxALL, 5);
+
+        m_textGameTimeValue =
+                new wxStaticText(m_panel42, wxID_ANY, wxT("00:00:00"), wxDefaultPosition, wxDefaultSize, 0);
+        m_textGameTimeValue->Wrap(-1);
+        fgSizer8->Add(m_textGameTimeValue, 1, wxALL, 5);
 
         m_textGamesPlayed =
                 new wxStaticText(m_panel42, wxID_ANY, wxT("Games played:"), wxDefaultPosition, wxDefaultSize, 0);
         m_textGamesPlayed->Wrap(-1);
         fgSizer8->Add(m_textGamesPlayed, 1, wxALL, 5);
 
-        m_textGamesPlayedValue = new wxStaticText(m_panel42, wxID_ANY, wxT("300"), wxDefaultPosition, wxDefaultSize, 0);
+        m_textGamesPlayedValue = new wxStaticText(m_panel42, wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize, 0);
         m_textGamesPlayedValue->Wrap(-1);
         fgSizer8->Add(m_textGamesPlayedValue, 1, wxALL | wxEXPAND | wxALIGN_CENTER_VERTICAL, 5);
 
@@ -741,7 +964,7 @@ namespace Frame
         m_textWon->Wrap(-1);
         fgSizer9->Add(m_textWon, 0, wxALL, 5);
 
-        m_textWonValue = new wxStaticText(m_panel43, wxID_ANY, wxT("100"), wxDefaultPosition, wxDefaultSize, 0);
+        m_textWonValue = new wxStaticText(m_panel43, wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize, 0);
         m_textWonValue->Wrap(-1);
         fgSizer9->Add(m_textWonValue, 0, wxALL, 5);
 
@@ -749,7 +972,7 @@ namespace Frame
         m_iconWon0->Wrap(-1);
         fgSizer9->Add(m_iconWon0, 0, wxTOP | wxBOTTOM | wxLEFT, 5);
 
-        m_textWonPercentage = new wxStaticText(m_panel43, wxID_ANY, wxT("33.33"), wxDefaultPosition, wxDefaultSize, 0);
+        m_textWonPercentage = new wxStaticText(m_panel43, wxID_ANY, wxT("n/a"), wxDefaultPosition, wxDefaultSize, 0);
         m_textWonPercentage->Wrap(-1);
         fgSizer9->Add(m_textWonPercentage, 0, wxTOP | wxBOTTOM, 5);
 
@@ -761,7 +984,7 @@ namespace Frame
         m_textLost->Wrap(-1);
         fgSizer9->Add(m_textLost, 0, wxALL, 5);
 
-        m_textLostValue = new wxStaticText(m_panel43, wxID_ANY, wxT("100"), wxDefaultPosition, wxDefaultSize, 0);
+        m_textLostValue = new wxStaticText(m_panel43, wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize, 0);
         m_textLostValue->Wrap(-1);
         fgSizer9->Add(m_textLostValue, 0, wxALL, 5);
 
@@ -769,7 +992,7 @@ namespace Frame
         m_iconLost0->Wrap(-1);
         fgSizer9->Add(m_iconLost0, 0, wxTOP | wxBOTTOM | wxLEFT, 5);
 
-        m_textLostPercentage = new wxStaticText(m_panel43, wxID_ANY, wxT("33.33"), wxDefaultPosition, wxDefaultSize, 0);
+        m_textLostPercentage = new wxStaticText(m_panel43, wxID_ANY, wxT("n/a"), wxDefaultPosition, wxDefaultSize, 0);
         m_textLostPercentage->Wrap(-1);
         fgSizer9->Add(m_textLostPercentage, 0, wxTOP | wxBOTTOM, 5);
 
@@ -781,7 +1004,7 @@ namespace Frame
         m_textDraw->Wrap(-1);
         fgSizer9->Add(m_textDraw, 0, wxALL, 5);
 
-        m_textDrawValue = new wxStaticText(m_panel43, wxID_ANY, wxT("100"), wxDefaultPosition, wxDefaultSize, 0);
+        m_textDrawValue = new wxStaticText(m_panel43, wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize, 0);
         m_textDrawValue->Wrap(-1);
         fgSizer9->Add(m_textDrawValue, 0, wxALL, 5);
 
@@ -789,7 +1012,7 @@ namespace Frame
         m_iconDraw0->Wrap(-1);
         fgSizer9->Add(m_iconDraw0, 0, wxTOP | wxBOTTOM | wxLEFT, 5);
 
-        m_textDrawPercentage = new wxStaticText(m_panel43, wxID_ANY, wxT("33.33"), wxDefaultPosition, wxDefaultSize, 0);
+        m_textDrawPercentage = new wxStaticText(m_panel43, wxID_ANY, wxT("n/a"), wxDefaultPosition, wxDefaultSize, 0);
         m_textDrawPercentage->Wrap(-1);
         fgSizer9->Add(m_textDrawPercentage, 0, wxTOP | wxBOTTOM, 5);
 
@@ -889,6 +1112,10 @@ namespace Frame
                                    wxCommandEventHandler(BKECtrl::OnClickBoard08),
                                    nullptr,
                                    this);
+
+        m_strategyButtonManual->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( BKECtrl::OnToggleManual ), nullptr, this );
+        m_strategyButtonFair->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( BKECtrl::OnToggleFair ), nullptr, this );
+        m_strategyButtonEasy->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( BKECtrl::OnToggleEasy ), nullptr, this );
     }
     void BKECtrl::DisconnectEvents()
     {
@@ -964,5 +1191,9 @@ namespace Frame
                                       wxCommandEventHandler(BKECtrl::OnClickBoard08),
                                       nullptr,
                                       this);
+
+        m_strategyButtonManual->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( BKECtrl::OnToggleManual ), nullptr, this );
+        m_strategyButtonFair->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( BKECtrl::OnToggleFair ), nullptr, this );
+        m_strategyButtonEasy->Connect( wxEVT_COMMAND_TOGGLEBUTTON_CLICKED, wxCommandEventHandler( BKECtrl::OnToggleEasy ), nullptr, this );
     }
 }// namespace Frame

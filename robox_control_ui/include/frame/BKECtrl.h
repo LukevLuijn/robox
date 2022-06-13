@@ -7,22 +7,43 @@
 
 #include "wx/bmpbuttn.h"
 #include "wx/button.h"
+#include "wx/tglbtn.h"
 #include "wx/slider.h"
 #include "wx/statline.h"
 #include "wx/stattext.h"
 #include "wx/textctrl.h"
 
+#include <chrono>
+#include <map>
+
 #include "FrameInterface.h"
+#include "UpdateTimer.h"
 #include "bke_locations.h"
+
+wxDEFINE_EVENT(GAME_COMPLETE, wxCommandEvent);
 
 namespace Frame
 {
     struct BKELocation {
         float a1, a2, h;
     };
-
-    enum class StorageType_e : uint8_t;
-    enum class StorageInteraction_e : uint8_t;
+    enum class StorageType_e : uint8_t
+    {
+        STORAGE_X = 0,
+        STORAGE_O = 1,
+        BOARD = 2,
+    };
+    enum class StorageInteraction_e : uint8_t
+    {
+        RETRIEVE = 0,
+        STORE = 1,
+    };
+    enum class BKEStrategy_e : uint8_t
+    {
+        FAIR = 0,
+        EASY = 1,
+        MANUAL = 2,
+    };
 
     class BKECtrl : public IFrame
     {
@@ -47,12 +68,20 @@ namespace Frame
         void RemovePiece(uint8_t index, StorageType_e type, bool home = true);
         bool GetStorageLocation(StorageType_e type, StorageInteraction_e interaction, BKELocation& location);
         void BoardInteraction(uint8_t index, bool home = true);
+        void ClearBoard();
+        void UpdateStatistics(BKEResult_e result);
 
-        static void MoveToLocation(const BKELocation& location, bool isTrigger, bool isDrop = false);
+
         static void MoveToActiveHome();
+        static void MoveToLocation(const BKELocation& location, bool isTrigger, bool isDrop = false);
+        static float GetGripAngle(float A1, float A2);
         static void TriggerGripper(uint8_t value);
         static void Move(float A0, float A1, float A2, float A3);
+        static uint8_t PlayPiece(BKEStrategy_e strategy);
+
     private:
+        virtual void OnUpdateEvent(wxTimerEvent& event);
+
         virtual void OnKillFocusSpeed(wxFocusEvent& event);
         virtual void OnTextEnterSpeed(wxCommandEvent& event);
         virtual void OnTextMaxLenSpeed(wxCommandEvent& event);
@@ -75,6 +104,10 @@ namespace Frame
         virtual void OnClickBoard07(wxCommandEvent& event);
         virtual void OnClickBoard08(wxCommandEvent& event);
 
+        virtual void OnToggleManual(wxCommandEvent& event);
+        virtual void OnToggleFair(wxCommandEvent& event);
+        virtual void OnToggleEasy(wxCommandEvent& event);
+
     private:
         void InitializeFrame();
         void ConnectEvents();
@@ -85,7 +118,12 @@ namespace Frame
         wxBitmap m_bitmapPieceO, m_bitmapPieceX, m_bitmapEmpty;
         std::array<uint8_t, 2> m_storage;
 
-        std::array<BKELocation, N_TOTAL_LOCATIONS> m_locations{
+        bool m_gameActive;
+        std::chrono::time_point<std::chrono::steady_clock> m_gameStart;
+        BKEStrategy_e m_strategy;
+
+
+        const std::array<BKELocation, N_TOTAL_LOCATIONS> m_locations{
                 BKELocation{BOARD_LOC_00}, BKELocation{BOARD_LOC_01}, BKELocation{BOARD_LOC_02},
                 BKELocation{BOARD_LOC_03}, BKELocation{BOARD_LOC_04}, BKELocation{BOARD_LOC_05},
                 BKELocation{BOARD_LOC_06}, BKELocation{BOARD_LOC_07}, BKELocation{BOARD_LOC_08},
@@ -96,7 +134,9 @@ namespace Frame
         };
 
     private:
-        std::array<wxBitmapButton*, 9> m_boardButtons;
+        std::array<wxBitmapButton*, 9> m_boardButtons{};
+
+        wxTimer* m_timer;
 
         wxPanel* m_speedPanel{};
         wxPanel* m_boardPanel{};
@@ -122,15 +162,23 @@ namespace Frame
         wxButton* m_buttonResetBoard{};
         wxButton* m_buttonHome{};
 
+        wxToggleButton* m_strategyButtonManual{};
+        wxToggleButton* m_strategyButtonFair{};
+        wxToggleButton* m_strategyButtonEasy{};
+
         wxStaticText* m_textSpeed{};
         wxStaticText* m_iconSpeed{};
         wxStaticText* m_textAccel{};
         wxStaticText* m_iconAccel{};
         wxStaticText* m_textTurn{};
-        wxStaticText* m_textTurnRobox{};
+        wxStaticText* m_textTurnROBOX{};
         wxStaticText* m_textTurnUser{};
         wxStaticText* m_textRunTime{};
         wxStaticText* m_textRunTimeValue{};
+
+        wxStaticText* m_textGameTime{};
+        wxStaticText* m_textGameTimeValue{};
+
         wxStaticText* m_textGamesPlayed{};
         wxStaticText* m_textGamesPlayedValue{};
         wxStaticText* m_textWon{};
@@ -148,17 +196,6 @@ namespace Frame
         wxStaticText* m_iconDraw0{};
         wxStaticText* m_textDrawPercentage{};
         wxStaticText* m_iconDraw1{};
-    };
-
-    enum class StorageType_e : uint8_t
-    {
-        STORAGE_X = 0,
-        STORAGE_O = 1,
-    };
-    enum class StorageInteraction_e : uint8_t
-    {
-        RETRIEVE = 0,
-        STORE = 1,
     };
 }// namespace Frame
 

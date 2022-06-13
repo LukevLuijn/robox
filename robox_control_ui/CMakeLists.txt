@@ -63,7 +63,8 @@ set(HEADERS_UTILS
         include/utils/Bitmap.h
         include/utils/String.h
         include/utils/Point.h
-        include/utils/Kinematics.h)
+        include/utils/Kinematics.h
+        include/utils/UpdateTimer.h)
 set(HEADERS_WIDGETS
         include/widgets/ConcreteMessagePanels.h
         include/widgets/LogMessagePanel.h
@@ -91,6 +92,7 @@ set(SOURCES
         src/MainApplication.cpp
         src/BKECtrl.cpp
         src/BKEDriver.cpp
+        src/UpdateTimer.cpp
         src/main.cpp)
 
 set(HEADERS

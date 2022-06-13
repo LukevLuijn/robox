@@ -35,15 +35,17 @@ namespace Driver
                 });
         void StopBKEConnection();
         void ReadMessage(const char* data, unsigned int len);
+        bool NewPiecePlaced(BKEPiece_e& piece);
 
     private:
-        static bool ParseMessage(const std::string& message);
+        bool ParseMessage(const std::string& message);
     public:
         static Board m_board;
         static BKEResult_e m_result;
 
     private:
         std::function<void(const std::string&)> m_responseCallback;
+        Board m_previousBoard;
     };
 }// namespace Driver
 

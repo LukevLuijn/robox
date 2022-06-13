@@ -56,6 +56,7 @@ enum class BKEType_e : uint8_t
 {
     BOARD_UPDATE = 0,
     GAME_RESULT = 1,
+    BOARD_RESULT = 2,
 };
 enum class LogParts_e : uint8_t
 {

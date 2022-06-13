@@ -30,6 +30,8 @@ namespace Base
         Bind(UPDATE_EVENT, &Controller::OnUpdateEvent, this);
         Bind(LOG_EVENT, &Controller::OnLogEvent, this);
         Bind(BKE_EVENT, &Controller::OnBKEEvent, this);
+
+        Bind(GAME_COMPLETE, &Controller::OnClickMenuStop, this);
     }
     void Controller::OnCloseWindow(wxCloseEvent& event)
     {
@@ -192,6 +194,13 @@ namespace Base
         Layout();
         event.Skip();
     }
+    void Controller::OnGameComplete(wxCommandEvent& event)
+    {
+        WARNING("GAME COMPLETE");
+        Driver::RobotController::GetInstance().StopRobot();
+        DeactivateControl();
+        m_buttonMenuActivate->SetValue(false);
+    }
     void Controller::ResponseCallback(const std::string& response)
     {
         wxCommandEvent event(UPDATE_EVENT);
@@ -203,6 +212,22 @@ namespace Base
         wxCommandEvent event(BKE_EVENT);
         event.SetString(message);
         wxPostEvent(this, event);
+    }
+    void Controller::DeactivateRobot()
+    {
+        INFO("Deactivating robot.");
+
+        wxCommandEvent event(wxEVT_COMMAND_BUTTON_CLICKED);
+        OnClickMenuStop(event);
+    }
+    void Controller::ActivateRobot()
+    {
+        INFO("Activating robot.");
+
+        m_buttonMenuActivate->SetValue(true);
+
+        wxCommandEvent event(wxEVT_COMMAND_TOGGLEBUTTON_CLICKED);
+        OnClickMenuActivate(event);
     }
     void Controller::SetNewControlFrame(Frame::FrameTypes_e type)
     {
@@ -217,10 +242,6 @@ namespace Base
         m_placeholderSizer->FitInside(m_placeholderSizer->GetContainingWindow());
         m_placeholderSizer->GetContainingWindow()->Update();
 
-//        if (!m_buttonMenuActivate->GetValue())
-//        {
-//            m_placeholder->Disable();
-//        }
         for (wxButton* button : m_menuButtons)
         {
             button->Enable();

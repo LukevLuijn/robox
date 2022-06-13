@@ -4,10 +4,11 @@
 
 #include "BKEDriver.h"
 #include "global_config.h"
+#include "msg_protocol.h"
 
 namespace Driver
 {
-    /*static*/ Board BKEDriver::m_board;
+    /*static*/ Board BKEDriver::m_board = {0,0,0,0,0,0,0,0,0};
     /*static*/ BKEResult_e BKEDriver::m_result;
 
     namespace
@@ -22,7 +23,8 @@ namespace Driver
     BKEDriver::BKEDriver()
         : m_responseCallback([](const std::string& message) {
               INFO("[DEFAULT] Response:", message);
-          })
+          }),
+          m_previousBoard(m_board)
     {
     }
     BKEDriver::~BKEDriver()
@@ -55,8 +57,6 @@ namespace Driver
             {
                 ERROR("unable to parse", message);
             }
-
-
         }
         else
         {
@@ -68,12 +68,25 @@ namespace Driver
             }
         }
     }
+    bool BKEDriver::NewPiecePlaced(BKEPiece_e& piece)
+    {
+        for(size_t i =0; i < m_board.size(); ++i)
+        {
+            if (m_board[i] != m_previousBoard[i] && m_board[i] != (uint8_t)BKEPiece_e::NO_PIECE)
+            {
+                piece = (BKEPiece_e)m_board[i];
+                return true;
+            }
+        }
+        return false;
+    }
     bool BKEDriver::ParseMessage(const std::string& message)
     {
         if (static_cast<MessageType_e>(message[0]) == MessageType_e::BKE)
         {
             switch (static_cast<BKEType_e>(message[1] - '0'))
             {
+                case BKEType_e::BOARD_RESULT:
                 case BKEType_e::BOARD_UPDATE:
                 {
                     std::string params = message.substr(2);                                 // remove message header
@@ -88,6 +101,8 @@ namespace Driver
 
                     try
                     {
+                        m_previousBoard = m_board;
+
                         m_board[0] = static_cast<uint16_t>(std::stoi(paramList[(std::size_t) BKEUpdate_e::FIELD_0]));
                         m_board[1] = static_cast<uint16_t>(std::stoi(paramList[(std::size_t) BKEUpdate_e::FIELD_1]));
                         m_board[2] = static_cast<uint16_t>(std::stoi(paramList[(std::size_t) BKEUpdate_e::FIELD_2]));
