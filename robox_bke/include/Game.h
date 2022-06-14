@@ -1,3 +1,11 @@
+// ======================================
+// Filename:    Game.h
+// Project:     ROBOX BKE
+// Subsystem:   BKE control
+// Author:      Luke van Luijn
+// Data:        09-06-2022
+// ======================================
+
 #ifndef ROBOX_BKE_GAME_H
 #define ROBOX_BKE_GAME_H
 
