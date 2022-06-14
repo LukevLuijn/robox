@@ -1,3 +1,10 @@
+// ======================================
+// Filename:    Board.h
+// Project:     ROBOX BKE
+// Subsystem:   BKE control
+// Author:      Luke van Luijn
+// Data:        09-06-2022
+// ======================================
 
 #ifndef ROBOX_BKE_BOARD_H
 #define ROBOX_BKE_BOARD_H
@@ -15,8 +22,16 @@ namespace Base
     public:
         Board();
         virtual ~Board() = default;
-
+        /**
+         * @brief Start Board class.
+         * 
+         */
         void Start();
+        /**
+         * @brief Get state instance of current board.
+         * 
+         * @param rState
+         */
         void GetBoard(State& rState);
 
     private:

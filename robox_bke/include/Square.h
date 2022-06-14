@@ -20,10 +20,31 @@ namespace Device
         Square(uint8_t pin01, uint8_t pin02);
         virtual ~Square() = default;
 
+        /**
+         * @brief Start square instance.
+         * 
+         */
         void Start();
-
+        /**
+         * @brief Check if square contains piece.
+         * 
+         * @return true If square contains a piece.
+         * @return false If square does not contain a piece.
+         */
         bool HasPiece();
+        /**
+         * @brief Check if square contains X-piece.
+         * 
+         * @return true If square contains an X-piece.
+         * @return false If square does not contain an X-piece.
+         */
         bool HasPieceX();
+        /**
+         * @brief Check if square contains O-piece.
+         * 
+         * @return true If square contains an O-piece.
+         * @return false If square does not contain an O-piece.
+         */
         bool hasPieceO();
 
     private:

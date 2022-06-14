@@ -23,7 +23,17 @@ namespace Base
         Game();
         virtual ~Game() = default;
 
+        /**
+         * @brief Start game.
+         * 
+         * @return true If start was succesfull.
+         * @return false If start was not succesfull.
+         */
         bool Start();
+        /**
+         * @brief Run game.
+         * 
+         */
         void Run();
 
     private:
