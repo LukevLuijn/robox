@@ -1,6 +1,7 @@
 // ======================================
 // Filename:    Logger.cpp
 // Project:     ROBOX Control UI
+// Subsystem:   Main Application
 // Author:      Luke van Luijn
 // Data:        15-05-2022
 // ======================================

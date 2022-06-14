@@ -1,9 +1,10 @@
-/*
- * File:   AsyncSerial.cpp
- * Author: Terraneo Federico
- * Distributed under the Boost Software License, Version 1.0.
- * Created on September 7, 2009, 10:46 AM
- */
+// ======================================
+// Filename:    AsyncSerial.cpp
+// Project:     ASyncSerial
+// License:     Boost Software License, Version 1.0.
+// Author:      Terraneo Federico
+// Data:        07-08-2009
+// ======================================
 
 #include "AsyncSerial.h"
 

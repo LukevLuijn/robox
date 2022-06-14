@@ -1,9 +1,11 @@
 // ======================================
 // Filename:    FrameInterface.h
 // Project:     ROBOX Control UI
+// Subsystem:   Main Application
 // Author:      Luke van Luijn
 // Data:        17-05-2022
 // ======================================
+
 #ifndef ROBOX_CONTROL_UI_FRAME_INTERFACE_H
 #define ROBOX_CONTROL_UI_FRAME_INTERFACE_H
 

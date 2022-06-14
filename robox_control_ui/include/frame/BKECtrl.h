@@ -1,7 +1,10 @@
-//
-// Created by luke on 10-06-22.
-//
-
+// ======================================
+// Filename:    BKECtrl.h
+// Project:     ROBOX Control UI
+// Subsystem:   BKE control
+// Author:      Luke van Luijn
+// Data:        10-06-2022
+// ======================================
 #ifndef ROBOX_CONTROL_UI_BKECTRL_H
 #define ROBOX_CONTROL_UI_BKECTRL_H
 
@@ -56,10 +59,29 @@ namespace Frame
         explicit BKECtrl(wxWindow* parent);
         ~BKECtrl() override;
 
+        /**
+         * @brief Get current instance of this panel.
+         *
+         * @return Current instance of panel.
+         */
         wxPanel* GetPanel() override;
+        /**
+         * @brief Update data based on incoming message.
+         *
+         * @param responseType Type of data update.
+         */
         void UpdateData(DataType_e responseType) override;
+        /**
+         * @brief Reset panel to initial state.
+         *
+         * @note Not used.
+         */
         void ResetPanel() override;
-
+        /**
+         * @brief Update BKE Board.
+         *
+         * @param type BKE update type.
+         */
         void UpdateBKE(BKEType_e type);
 
     private:

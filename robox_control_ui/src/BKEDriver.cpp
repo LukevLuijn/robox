@@ -1,6 +1,10 @@
-//
-// Created by luke on 10-06-22.
-//
+// ======================================
+// Filename:    BKEDriver.h
+// Project:     ROBOX Control UI
+// Subsystem:   BKE control
+// Author:      Luke van Luijn
+// Data:        10-06-2022
+// ======================================
 
 #include "BKEDriver.h"
 #include "global_config.h"

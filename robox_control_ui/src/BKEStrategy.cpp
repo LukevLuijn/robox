@@ -1,6 +1,10 @@
-//
-// Created by luke on 13-06-22.
-//
+// ======================================
+// Filename:    bke_locations.h
+// Project:     ROBOX Control UI
+// Subsystem:   BKE control
+// Author:      Luke van Luijn
+// Data:        13-06-2022
+// ======================================
 
 #include "BKEStrategy.h"
 #include <random>

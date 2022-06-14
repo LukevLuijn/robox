@@ -1,7 +1,10 @@
-//
-// Created by luke on 10-06-22.
-//
-
+// ======================================
+// Filename:    BKECtrl.h
+// Project:     ROBOX Control UI
+// Subsystem:   BKE control
+// Author:      Luke van Luijn
+// Data:        10-06-2022
+// ======================================
 #include <random>
 
 #include "wx/sizer.h"

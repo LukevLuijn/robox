@@ -1,6 +1,7 @@
 // ======================================
 // Filename:    LogToWidget.h
 // Project:     ROBOX Control UI
+// Subsystem:   Main Application
 // Author:      Luke van Luijn
 // Data:        16-05-2022
 // ======================================
