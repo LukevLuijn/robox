@@ -20,6 +20,8 @@
 
 /*
 
+> ```note``` Writen and spoken in dutch.
+
 | File     | Type     | Text                                                            |
 | :------- | :------- | :-------------------------------------------------------------- |
 | 0001.mp3 | **Lost** | Dit had ik niet verwacht                                        |
