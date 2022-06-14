@@ -5,8 +5,9 @@
 // Author:      Luke van Luijn
 // Data:        10-06-2022
 // ======================================
-#ifndef ROBOX_CONTROL_UI_BKEDRIVER_H
-#define ROBOX_CONTROL_UI_BKEDRIVER_H
+
+#ifndef ROBOX_CONTROL_UI_BKE_DRIVER_H
+#define ROBOX_CONTROL_UI_BKE_DRIVER_H
 
 #include "Logger.h"
 #include "SerialDriver.h"
@@ -73,4 +74,4 @@ namespace Driver
     };
 }// namespace Driver
 
-#endif//ROBOX_CONTROL_UI_BKEDRIVER_H
+#endif//ROBOX_CONTROL_UI_BKE_DRIVER_H

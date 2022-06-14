@@ -6,8 +6,8 @@
 // Data:        13-06-2022
 // ======================================
 
-#ifndef ROBOX_CONTROL_UI_BKESTRATEGY_H
-#define ROBOX_CONTROL_UI_BKESTRATEGY_H
+#ifndef ROBOX_CONTROL_UI_BKE_STRATEGY_H
+#define ROBOX_CONTROL_UI_BKE_STRATEGY_H
 
 #include "BKEDriver.h"
 
@@ -59,4 +59,4 @@ namespace Utils
     };
 }
 
-#endif//ROBOX_CONTROL_UI_BKESTRATEGY_H
+#endif//ROBOX_CONTROL_UI_BKE_STRATEGY_H

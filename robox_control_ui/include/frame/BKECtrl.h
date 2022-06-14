@@ -5,8 +5,8 @@
 // Author:      Luke van Luijn
 // Data:        10-06-2022
 // ======================================
-#ifndef ROBOX_CONTROL_UI_BKECTRL_H
-#define ROBOX_CONTROL_UI_BKECTRL_H
+#ifndef ROBOX_CONTROL_UI_BKE_CTRL_H
+#define ROBOX_CONTROL_UI_BKE_CTRL_H
 
 #include "wx/bmpbuttn.h"
 #include "wx/button.h"
@@ -229,4 +229,4 @@ namespace Frame
     };
 }// namespace Frame
 
-#endif//ROBOX_CONTROL_UI_BKECTRL_H
+#endif//ROBOX_CONTROL_UI_BKE_CTRL_H
