@@ -113,6 +113,7 @@ namespace Base
             if (Driver::RobotController::GetInstance().IsConnected())
             {
                 m_buttonMenuActivate->Enable();
+                m_buttonMenuEStop->Enable();
                 m_buttonMenuConnect->SetLabel("Disconnect");
             }
             else
@@ -129,6 +130,7 @@ namespace Base
             Driver::BKEDriver::GetInstance().StopBKEConnection();
 
             m_buttonMenuActivate->Disable();
+            m_buttonMenuEStop->Disable();
             DeactivateControl();
 
             m_buttonMenuConnect->SetLabel("Connect");
@@ -258,7 +260,7 @@ namespace Base
         m_buttonMenuRun->Enable();
 //        m_placeholder->Enable();
         m_buttonMenuStop->Enable();
-        m_buttonMenuEStop->Enable();
+//        m_buttonMenuEStop->Enable();
         m_buttonMenuActivate->SetLabel("Deactivate");
 
         builder.ResetControlPanel();
@@ -270,7 +272,7 @@ namespace Base
         m_buttonMenuRun->Disable();
         m_placeholder->Disable();
         m_buttonMenuStop->Disable();
-        m_buttonMenuEStop->Disable();
+//        m_buttonMenuEStop->Disable();
         m_buttonMenuActivate->SetLabel("Activate");
 
         builder.ResetControlPanel();
