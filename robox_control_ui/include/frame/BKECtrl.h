@@ -102,6 +102,7 @@ namespace Frame
         void BoardInteraction(uint8_t index, bool home = true);
         void ClearBoard();
         void UpdateStatistics(BKEResult_e result);
+        void SetStatistics();
         void ToggleTurn(BKETurn_e turn);
 
         static void MoveToActiveHome();

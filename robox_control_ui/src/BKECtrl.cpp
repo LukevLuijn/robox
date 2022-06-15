@@ -56,6 +56,8 @@ namespace Frame
         m_timer->Start(1000);
 
         ToggleTurn(BKETurn_e::USER);
+
+        SetStatistics();
     }
     BKECtrl::~BKECtrl()
     {
@@ -180,22 +182,6 @@ namespace Frame
                 INFO("Game completed.", results[(size_t)Driver::BKEDriver::m_result]);
                 Driver::RobotController::GetInstance().PauseRobot(1000);
                 EndGame();
-
-//                auto WaitAndClear = [&]() {
-//                    std::this_thread::sleep_for(std::chrono::milliseconds(50));// wait for board result
-//                    ClearBoard();
-//
-//                    auto window = dynamic_cast<Base::Controller*>(Base::TheApp().GetTopWindow());
-//                    if (window)
-//                    {
-//                        window->DeactivateRobot();
-//                        m_gameActive = false;
-//                    }
-//                };
-//                std::thread clearBoardThread(WaitAndClear);
-//                clearBoardThread.detach();
-//
-//                UpdateStatistics(Driver::BKEDriver::m_result);
             }
             break;
         }
@@ -455,22 +441,46 @@ namespace Frame
                 ++statistics[Statistics_e::GAMES_DRAW];
                 break;
         }
+        SetStatistics();
+    }
+    void BKECtrl::SetStatistics()
+    {
+        std::string wonPercentageStr = "n/a";
+        std::string lostPercentageStr = "n/a";
+        std::string drawPercentageStr = "n/a";
 
-        float wonPercentage =
-                static_cast<float>(statistics[Statistics_e::GAMES_WON] / statistics[Statistics_e::GAMES_PLAYED]) * 100;
-        float lostPercentage =
-                static_cast<float>(statistics[Statistics_e::GAMES_LOST] / statistics[Statistics_e::GAMES_PLAYED]) * 100;
-        float drawPercentage =
-                static_cast<float>(statistics[Statistics_e::GAMES_DRAW] / statistics[Statistics_e::GAMES_PLAYED]) * 100;
-
+        if (statistics[Statistics_e::GAMES_PLAYED] != 0)
+        {
+//            if (statistics[Statistics_e::GAMES_WON] != 0)
+            {
+                float percent =
+                        ((float)statistics[Statistics_e::GAMES_WON] / (float)statistics[Statistics_e::GAMES_PLAYED]) * 100;
+                wonPercentageStr = Utils::String::ToString(percent, 2);
+            }
+//            if (statistics[Statistics_e::GAMES_LOST] != 0)
+            {
+                float percent =
+                        ((float)statistics[Statistics_e::GAMES_LOST] / (float)statistics[Statistics_e::GAMES_PLAYED]) * 100;
+                lostPercentageStr = Utils::String::ToString(percent, 2);
+            }
+//            if (statistics[Statistics_e::GAMES_DRAW] != 0)
+            {
+                float percent =
+                        ((float)statistics[Statistics_e::GAMES_DRAW] / (float)statistics[Statistics_e::GAMES_PLAYED]) * 100;
+                drawPercentageStr = Utils::String::ToString(percent, 2);
+            }
+        }
         m_textGamesPlayedValue->SetLabel(std::to_string(statistics[Statistics_e::GAMES_PLAYED]));
         m_textWonValue->SetLabel(std::to_string(statistics[Statistics_e::GAMES_WON]));
         m_textLostValue->SetLabel(std::to_string(statistics[Statistics_e::GAMES_LOST]));
         m_textDrawValue->SetLabel(std::to_string(statistics[Statistics_e::GAMES_DRAW]));
 
-        m_textWonPercentage->SetLabel(Utils::String::ToString(wonPercentage, 2));
-        m_textLostPercentage->SetLabel(Utils::String::ToString(lostPercentage, 2));
-        m_textDrawPercentage->SetLabel(Utils::String::ToString(drawPercentage, 2));
+        m_textWonPercentage->SetLabel(wonPercentageStr);
+        m_textLostPercentage->SetLabel(lostPercentageStr);
+        m_textDrawPercentage->SetLabel(drawPercentageStr);
+
+        Layout();
+        Refresh();
     }
     void BKECtrl::MoveToActiveHome()
     {
