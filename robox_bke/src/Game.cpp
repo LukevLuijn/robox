@@ -13,7 +13,9 @@
 
 namespace Base
 {
-    Game::Game() : m_timer(0), m_newPiece(false), m_lastSoundIndex(0)
+    Game::Game()
+        : m_timer(0), m_newPiece(false), m_lastSoundIndex(0), m_gameComplete(false), m_gameMessagePlayed(false),
+          m_endMessageSend(false)
     {
     }
     bool Game::Start()
@@ -54,6 +56,7 @@ namespace Base
             // board empty, game reset.
             m_gameComplete = false;
             m_gameMessagePlayed = false;
+            m_endMessageSend = false;
         }
 
         if (IsNewState(current, m_previousState) && !m_newPiece)
@@ -229,17 +232,21 @@ namespace Base
     }
     void Game::EndMessage(Type_e type)
     {
-        if (type == Type_e::O_PIECE)
+        if (!m_endMessageSend)
         {
-            WonMessage();
-        }
-        else if (type == Type_e::X_PIECE)
-        {
-            LostMessage();
-        }
-        else
-        {
-            DrawMessage();
+            if (type == Type_e::O_PIECE)
+            {
+                WonMessage();
+            }
+            else if (type == Type_e::X_PIECE)
+            {
+                LostMessage();
+            }
+            else
+            {
+                DrawMessage();
+            }
+            m_endMessageSend = true;
         }
     }
     void Game::LostMessage()

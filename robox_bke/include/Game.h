@@ -70,6 +70,7 @@ namespace Base
         uint8_t m_lastSoundIndex;
         bool m_gameComplete;
         bool m_gameMessagePlayed;
+        bool m_endMessageSend;
         Type_e m_gameResult;
     };
 
