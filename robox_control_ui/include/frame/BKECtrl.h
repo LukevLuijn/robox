@@ -84,6 +84,11 @@ namespace Frame
          */
         void UpdateBKE(BKEType_e type);
 
+        /**
+         * @brief End the game.
+         */
+        void EndGame();
+
     private:
         void UpdateFields();
         void SyncFields();
@@ -167,6 +172,7 @@ namespace Frame
         std::array<wxBitmapButton*, 9> m_boardButtons{};
 
         wxTimer* m_timer;
+
 
         wxPanel* m_speedPanel{};
         wxPanel* m_boardPanel{};

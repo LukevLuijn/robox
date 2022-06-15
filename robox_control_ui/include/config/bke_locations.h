@@ -12,7 +12,7 @@
 #define N_BOARD_LOCATIONS 9
 #define BOARD_START 0
 
-#define BOARD_LOC_00 -7.3f, -161.1f, 39.0f
+#define BOARD_LOC_00 -7.3f, -161.1f, 38.5f
 #define BOARD_LOC_01  7.0f, -175.7f, 39.0f
 #define BOARD_LOC_02 60.1f, -161.1f, 40.0f
 #define BOARD_LOC_03 16.2f, -137.8f, 40.5f

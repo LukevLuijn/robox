@@ -179,25 +179,44 @@ namespace Frame
                 const std::array<std::string, 3> results = {"Game won", "Game lost", "Game draw"};
                 INFO("Game completed.", results[(size_t)Driver::BKEDriver::m_result]);
                 Driver::RobotController::GetInstance().PauseRobot(1000);
+                EndGame();
 
-                auto WaitAndClear = [&]() {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(50));// wait for board result
-                    ClearBoard();
-
-                    auto window = dynamic_cast<Base::Controller*>(Base::TheApp().GetTopWindow());
-                    if (window)
-                    {
-                        window->DeactivateRobot();
-                        m_gameActive = false;
-                    }
-                };
-                std::thread clearBoardThread(WaitAndClear);
-                clearBoardThread.detach();
-
-                UpdateStatistics(Driver::BKEDriver::m_result);
+//                auto WaitAndClear = [&]() {
+//                    std::this_thread::sleep_for(std::chrono::milliseconds(50));// wait for board result
+//                    ClearBoard();
+//
+//                    auto window = dynamic_cast<Base::Controller*>(Base::TheApp().GetTopWindow());
+//                    if (window)
+//                    {
+//                        window->DeactivateRobot();
+//                        m_gameActive = false;
+//                    }
+//                };
+//                std::thread clearBoardThread(WaitAndClear);
+//                clearBoardThread.detach();
+//
+//                UpdateStatistics(Driver::BKEDriver::m_result);
             }
             break;
         }
+    }
+    void BKECtrl::EndGame()
+    {
+        INFO("Clearing board.");
+
+        ClearBoard();
+        UpdateStatistics(Driver::BKEDriver::m_result);
+
+        INFO("Deactivating control panel");
+
+        auto window = dynamic_cast<Base::Controller*>(Base::TheApp().GetTopWindow());
+        if (window)
+        {
+            window->DeactivateRobot();
+            m_gameActive = false;
+        }
+
+        INFO("Ready for next game!");
     }
     void BKECtrl::UpdateFields()
     {
