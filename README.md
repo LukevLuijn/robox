@@ -15,6 +15,6 @@ Everything you need to build your own ROBOX!
 |#|Method|Description|State|
 |:---:|:---|:---|:---|
 |MD-01|[**BKE-Control**](https://github.com/LukevLuijn/robox/tree/BKE-control)|Models and code implementation for the ability to play games of noughts and crosses against human players autonomously.|Finished|
-|MD-02|[**BLT-Control**](Not started..)|Additional control method for controlling the robot trough a bluetooth controller such as a Playstation 4 controller.|Not started|
-|MD-03|[**Keyboard-control**](Not started..)|Additional control method for controlling the robot trough a combination of keys on a standard keyboard.|Not started|
-|MD-04|[**Vision-control**](Not started..)|Models and code implementation to control the robot trough a webcam and various visual triggers such as hand gestures or shapes.|Not started|
+|MD-02|**BLT-Control**|Additional control method for controlling the robot trough a bluetooth controller such as a Playstation 4 controller.|Not started|
+|MD-03|**Keyboard-control**|Additional control method for controlling the robot trough a combination of keys on a standard keyboard.|Not started|
+|MD-04|**Vision-control**|Models and code implementation to control the robot trough a webcam and various visual triggers such as hand gestures or shapes.|Not started|
